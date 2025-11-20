@@ -1,16 +1,18 @@
+import api from '@/services/config';
 import NextAuth from 'next-auth';
 import { AdapterUser } from 'next-auth/adapters';
-// import GitHub from 'next-auth/providers/github';
-// import Google from 'next-auth/providers/google';
+import { JWT } from 'next-auth/jwt';
 import Credentials from 'next-auth/providers/credentials';
 declare module 'next-auth' {
   interface Session {
     user: {
       id: string
       email?: string | null
-      firstName?: string | null
-      lastName?: string | null
+      name?: string | null
+      image?: string | null
       role?: string
+      estado?: string
+      accessToken: JWT
     } | null
   }
 }
@@ -25,26 +27,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: 'Password', type: 'password' }
       },
       authorize: async (credentials) => {
-        // IMPORTANTE: Aquí debes validar contra tu base de datos
-        // Este es solo un ejemplo para demostración
-        if (credentials?.email === 'demo@example.com' && credentials.password === 'demo123') {
-          return { id: '1', email: 'demo@example.com', firstName: 'John', lastName: 'Doe', role: 'admin'};
+        try {
+          const { email, password } = credentials;
+          const {data} = await api.post('/auth/login', { email, password });
+          if (!data || !data.user || !data.accessToken) {
+            return null;
+          }
+
+          return {
+            accessToken: data.accessToken,
+            ...data.user
+          };
+        } catch (_error) {
+          return null;
         }
-        return null;
       }
     }),
-    
-    // Descomentar cuando tengas las credenciales de GitHub
-    // GitHub({
-    //   clientId: process.env.AUTH_GITHUB_ID!,
-    //   clientSecret: process.env.AUTH_GITHUB_SECRET!
-    // }),
-    
-    // Descomentar cuando tengas las credenciales de Google
-    // Google({
-    //   clientId: process.env.AUTH_GOOGLE_ID!,
-    //   clientSecret: process.env.AUTH_GOOGLE_SECRET!
-    // })
   ],
   pages: {
     signIn: '/auth/login',
@@ -54,34 +52,44 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Retorna true si el usuario está autenticado
       return !!auth;
     },
-      async jwt({ token, user }) {
+    async jwt({ token, user }) {
       if (user) {
         const userComplete = user as AdapterUser & {
-          firstName?: string | null
-          lastName?: string | null
-          role?: string
+          name: string
+          email: string
+          image: string
+          estado: string
+          role: string
+          accessToken: JWT
         };
-        token.id = user.id;
-        token.firstName = userComplete.firstName;
-        token.lastName = userComplete.lastName;
+        token.id = userComplete.id;
+        token.email = userComplete.email;
+        token.name = userComplete.name;
+        token.image = userComplete.image;
+        token.estado = userComplete.estado;
         token.role = userComplete.role;
+        token.accessToken = userComplete.accessToken;
       }
+        return token;
 
-      return token;
     },
     session(params) {
       const { session, token } = params;
         if (session.user && token.id) {
           session.user.id = token.id as string;
-          session.user.firstName = token.firstName as string;
-          session.user.lastName = token.lastName as string;
+          session.user.email = token.email as string;
+          session.user.name = token.name as string;
+          session.user.image = token.image as string;
+          session.user.estado = token.estado as string;
           session.user.role = token.role as string;
+          session.user.accessToken = token.accessToken as JWT;
       }
       return session;
     },
   },
   session: {
-    strategy: 'jwt'
+    strategy: 'jwt',
+    maxAge: 60 * 60  // 1 hora
   },
   trustHost: true // Importante para producción (Vercel, etc.)
 });
