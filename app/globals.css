@@ -5,9 +5,10 @@
   /* Colores base */
   --color-background   : #ffffff;
   --color-foreground   : #171717;
-  --color-card         : #cccccc;
+  --color-card         : #dddddd;
   --color-btn-primary  : #3b82f6;
   --color-btn-secondary: #6b7280;
+  --color-btn-ghost    : #f3f4f6;
 }
 
 /* Tema oscuro */
@@ -17,4 +18,5 @@
   --color-card         : #7a7979;
   --color-btn-primary  : #193f90;
   --color-btn-secondary: #24a444;
+  --color-btn-ghost    : #1e1e1e;
 }
