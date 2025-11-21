@@ -58,12 +58,6 @@ export default function SignInPage() {
                 <Link className="text-btn-primary mx-2 font-semibold" href={'register'}>Regístrate</Link>
               </p>
             </div>
-
-            <div className="mt-4 p-4 bg-background rounded-md border border-foreground/10">
-              <p className="text-xs text-foreground/60 text-center">
-                <strong>Demo:</strong> email: demo@example.com | password: demo123
-              </p>
-            </div>
           </form>
         </FormProvider>
       </div>

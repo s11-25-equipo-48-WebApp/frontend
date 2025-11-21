@@ -3,9 +3,9 @@
 
 @theme {
   /* Colores base */
-  --color-background   : #ffffff;
+  --color-background   : #f1f1f1;
   --color-foreground   : #171717;
-  --color-card         : #dddddd;
+  --color-card         : #e9e9e9;
   --color-btn-primary  : #3b82f6;
   --color-btn-secondary: #6b7280;
   --color-btn-ghost    : #f3f4f6;
@@ -15,7 +15,7 @@
 .dark {
   --color-background   : #1e1e1e;
   --color-foreground   : #ededed;
-  --color-card         : #7a7979;
+  --color-card         : #282828;
   --color-btn-primary  : #193f90;
   --color-btn-secondary: #24a444;
   --color-btn-ghost    : #1e1e1e;
