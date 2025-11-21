@@ -1,5 +1,6 @@
 import { auth } from '@/lib/auth';
 import SignOutButton from '@/components/SignOutButton';
+import Link from 'next/link';
 export default async function DashboardPage() {
   const session = await auth();
 
@@ -11,11 +12,13 @@ export default async function DashboardPage() {
             <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
             <SignOutButton />
           </div>
+          <Link href="/dashboard/editors">gestionar editores</Link>
+          <Link href="/dashboard/pending-reviews">gestionar reseñas</Link>
 
           <div className="flex items-center gap-4 mb-8">
             <div>
               <h2 className="text-2xl font-semibold text-foreground">
-                ¡Bienvenido, {session?.user?.firstName}!
+                {/* ¡Bienvenido, {session?.user?.firstName}! */}
               </h2>
               <p className="text-foreground/60">{session?.user?.email}</p>
             </div>
