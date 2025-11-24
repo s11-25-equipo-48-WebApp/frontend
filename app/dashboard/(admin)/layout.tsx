@@ -5,7 +5,7 @@ import React from 'react';
 export default async function layout({ children }: { children: React.ReactNode; }) {
   const session = await auth();
   if (!(session?.user?.role === 'admin')) {
-    redirect('/dashboard');
+    redirect('/dashboard?error=unauthorized');
   }
   return (
     <>
