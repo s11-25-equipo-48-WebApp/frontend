@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import api from '@/services/config';
 import Link from 'next/link';
+import Button from '../Button';
 
 interface Testimonial {
   id: string;
@@ -65,12 +66,14 @@ export default function RecentTestimonials() {
     <div className="bg-white rounded-xl shadow-sm border-2 border-green-500 p-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-gray-800">Últimos testimonios publicados</h2>
-        <Link
-          href="/dashboard/testimonios"
-          className="text-sm text-gray-600 hover:text-gray-800 font-medium"
-        >
-          Ver todo
-        </Link>
+        <Button variant="ghost">
+          <Link
+            href="/dashboard/testimonios"
+            className="text-sm font-medium"
+          >
+            Ver todo
+          </Link>
+        </Button>
       </div>
 
       <div className="space-y-4">

@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import api from '@/services/config';
 import { useState } from 'react';
+import Button from '../Button';
 
 interface CategoryData {
   positive: number;
@@ -34,27 +35,27 @@ export default function CategoriesChart() {
     <div className="bg-white rounded-xl shadow-sm p-6 h-full">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-gray-800">Categorías</h2>
-        <div className="flex gap-2">
-          <button
+        <div className="flex gap-6 w-full px-6">
+          <Button variant='ghost'
+            size='full'
             onClick={() => setTimeframe('semana')}
-            className={`px-3 py-1 text-sm rounded-lg transition-colors ${
-              timeframe === 'semana'
-                ? 'bg-gray-200 text-gray-800 font-medium'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
+            className={`${timeframe === 'semana'
+              ? ' font-medium'
+              : ' shadow-none  opacity-70'
+              }`}
           >
             Semana
-          </button>
-          <button
+          </Button>
+          <Button variant='ghost'
+            size='full'
             onClick={() => setTimeframe('mes')}
-            className={`px-3 py-1 text-sm rounded-lg transition-colors ${
-              timeframe === 'mes'
-                ? 'bg-gray-200 text-gray-800 font-medium'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
+            className={`${timeframe === 'mes'
+              ? ' font-medium'
+              : ' shadow-none opacity-70'
+              }`}
           >
             Mes
-          </button>
+          </Button>
         </div>
       </div>
 

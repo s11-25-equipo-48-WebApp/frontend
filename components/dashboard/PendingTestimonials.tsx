@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import api from '@/services/config';
 import Link from 'next/link';
+import Button from '../Button';
 
 interface PendingTestimonial {
   id: string;
@@ -38,12 +39,15 @@ export default function PendingTestimonials() {
             {displayPending.length}
           </span>
         </div>
-        <Link
-          href="/dashboard/revisiones"
-          className="text-sm text-gray-600 hover:text-gray-800 font-medium"
-        >
-          Ver todo
-        </Link>
+        <Button variant='ghost' className='p-0'>
+          <Link
+            href="/dashboard/revisiones"
+            className="text-sm font-medium"
+
+          >
+            Ver todo
+          </Link>
+        </Button>
       </div>
 
       <div className="overflow-x-auto">
@@ -88,13 +92,16 @@ export default function PendingTestimonials() {
                     <p className="text-sm text-gray-500">{item.course}</p>
                   </td>
                   <td className="py-4 px-4 text-gray-600">{item.receivedDate}</td>
-                  <td className="py-4 px-4 text-right">
-                    <Link
-                      href={`/dashboard/revisiones/${item.id}`}
-                      className="px-4 py-2 bg-orange-100 text-orange-600 rounded-lg text-sm font-medium hover:bg-orange-200 transition-colors inline-block"
-                    >
-                      Ver detalles
-                    </Link>
+                  <td className="py-4 px-4 ">
+                    <Button variant='action' color='orange' className='ml-auto'>
+                      <Link
+                        href={`/dashboard/revisiones/${item.id}`}
+                        className="text-sm font-medium"
+
+                      >
+                        Ver detalles
+                      </Link>
+                    </Button>
                   </td>
                 </tr>
               ))

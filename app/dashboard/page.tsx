@@ -1,12 +1,9 @@
-import { auth } from '@/lib/auth';
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import RecentTestimonials from '@/components/dashboard/RecentTestimonials';
 import CategoriesChart from '@/components/dashboard/CategoriesChart';
 import PendingTestimonials from '@/components/dashboard/PendingTestimonials';
 
-
-export default async function DashboardPage() {
-  const session = await auth();
+export default function DashboardPage() {
 
   return (
     <>

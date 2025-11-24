@@ -1,52 +1,75 @@
 import clsx from 'clsx';
 import React from 'react';
 import { RiLoader5Line } from 'react-icons/ri';
+
+type ButtonVariant = 'primary' | 'action' | 'ghost';
+type ButtonColor = 'default' | 'green' | 'red' | 'orange';
+
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean;
   children: React.ReactNode;
-  model?: 'primary' | 'secondary' | 'ghost';
-  unStyled?: boolean;
+  variant?: ButtonVariant;
+  color?: ButtonColor;
   size?: 'fit' | 'full';
-  name: string;
-  role?: string;
+  unStyled?: boolean;
+  name?: string;
 }
+
 export default function Button({
   isLoading,
   children,
-  model = 'primary',
-  size = 'full',
+  variant = 'primary',
+  color = 'default',
+  size,
   unStyled,
-  name,
-  role = 'button',
+  className,
+  disabled,
   ...props
 }: ButtonProps) {
-  const isPrimary = model === 'primary';
-  const isSecondary = model === 'secondary';
-  const isGhost = model === 'ghost';
-  const isFit = size === 'fit';
-  const isFull = size === 'full';
+
+  // Estilos Base
+  const baseStyles = 'font-semibold transition-all duration-200 flex items-center justify-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
+
+  // Estilos de FORMA (Variant)
+  const variantStyles = {
+    primary: clsx(
+      'rounded-lg text-lg',
+      size === 'fit' ? 'p-2 w-fit' : 'p-2 w-full'
+    ),
+    action: clsx(
+      'rounded-full text-sm px-4 py-1 shadow-sm hover:shadow-md',
+      size === 'full' ? 'w-full' : 'w-fit'
+    ),
+    ghost: clsx('bg-btn-ghost/50 border shadow-md border-foreground/20 text-foreground/50 p-2 rounded-lg hover:bg-btn-ghost/10',
+      size === 'full' ? 'w-full' : 'w-fit'
+    )
+  };
+
+  const colorStyles = {
+    default: 'bg-btn-primary text-white hover:opacity-90',
+
+    green: 'bg-btn-success/10 text-btn-success hover:brightness-95 dark:hover:brightness-110',
+
+    red: 'bg-btn-danger/10 text-btn-danger hover:brightness-95 dark:hover:brightness-110',
+
+    orange: 'bg-btn-warning/10 text-btn-warning hover:brightness-95 dark:hover:brightness-110',
+  };
+
   return (
     <button
       {...props}
+      disabled={isLoading || disabled}
       className={clsx(
-        !unStyled && 'rounded-lg hover:opacity-70 cursor-pointer text-lg font-semibold h-fit  disabled:opacity-50 disabled:cursor-not-allowed',
-        !unStyled && isPrimary && 'bg-btn-primary text-white',
-        !unStyled && isSecondary && 'bg-btn-secondary text-white',
-        !unStyled && isGhost && 'bg-transparent border border-btn-ghost text-btn-ghost',
-        !unStyled && isFit && 'p-1 w-fit',
-        !unStyled && isFull && 'p-2 w-full',
-        props?.className
+        !unStyled && baseStyles,
+        !unStyled && variantStyles[variant],
+        !unStyled && variant !== 'ghost' && colorStyles[color],
+        className
       )}
-      disabled={isLoading}
-      name={name}
-      role={role}
     >
       {isLoading ? (
-        <RiLoader5Line
-          className='animate-spin mx-auto my-1'
-        />
+        <RiLoader5Line className="animate-spin mx-auto my-1" />
       ) : (
-        <>{children}</>
+        children
       )}
     </button>
   );
