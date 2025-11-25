@@ -17,7 +17,7 @@ export const mockTestimonials: Testimonial[] = [
     email: "ana.perez@example.com",
     review: "positive",
     role: "Full Stack Pro",
-    image: "@/public/girlExample.jpg",
+    image: "/girlExample.jpg",
     urlVideo: "https://www.youtube.com/",
     content:
       "¡He conseguido el puesto de Junior con el que soñaba! El curso me preparó perfectamente para las entrevistas técnicas y los proyectos prácticos fueron clave para mi portfolio.",
@@ -29,7 +29,7 @@ export const mockTestimonials: Testimonial[] = [
     email: "rafael.gomez@example.com",
     review: "positive",
     role: "Python Avanzado",
-    image: "@/public/girlExample.jpg",
+    image: "/girlExample.jpg",
     urlVideo: "https://www.youtube.com/",
     content:
       "Explicación impecable de las estructuras de datos avanzadas. Los ejercicios de algoritmos me ayudaron a mejorar mi lógica de programación. Totalmente recomendado para quienes quieren profundizar en Python.",
@@ -41,7 +41,7 @@ export const mockTestimonials: Testimonial[] = [
     email: "lucas.fernandez@example.com",
     review: "negative",
     role: "Full Stack Pro",
-    image: "@/public/girlExample.jpg",
+    image: "/girlExample.jpg",
     urlVideo: "https://www.youtube.com/",
     content:
       "Finalmente lo entendí y estoy muy contenta de haberme inscrito. Sin embargo, algunas secciones podrían tener más ejemplos prácticos. El contenido es bueno pero esperaba más proyectos reales.",
@@ -53,7 +53,7 @@ export const mockTestimonials: Testimonial[] = [
     email: "mariana.vega@example.com",
     review: "positive",
     role: "Automatización con Shell",
-    image: "@/public/girlExample.jpg",
+    image: "/girlExample.jpg",
     urlVideo: "https://www.youtube.com/",
     content:
       "Implementé la automatización y ahorré más de 10 horas semanales en tareas repetitivas. Los scripts que aprendí a crear son ahora parte esencial de mi flujo de trabajo diario. Excelente inversión de tiempo.",
@@ -65,7 +65,7 @@ export const mockTestimonials: Testimonial[] = [
     email: "maria.rodriguez@example.com",
     review: "positive",
     role: "Python Avanzado",
-    image: "@/public/girlExample.jpg",
+    image: "/girlExample.jpg",
     urlVideo: "https://www.youtube.com/",
     content:
       "Participar en este curso fue muy provechoso. Los conceptos de programación orientada a objetos y decoradores quedaron super claros. El instructor responde rápido las dudas y la comunidad es muy activa.",
