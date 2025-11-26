@@ -1,15 +1,15 @@
-'use client';
-import { useSession } from 'next-auth/react';
-import Link from 'next/link';
+"use client";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
 
 export default function UserInfo() {
   const { data: session, status } = useSession();
 
-  if (status === 'loading') {
+  if (status === "loading") {
     return <div className="text-foreground">Cargando...</div>;
   }
 
-  if (status === 'unauthenticated') {
+  if (status === "unauthenticated") {
     return (
       <Link
         href="/auth/login"
@@ -22,7 +22,7 @@ export default function UserInfo() {
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-foreground">Hola, {session?.user?.firstName} {session?.user?.lastName}</span>
+      <span className="text-foreground">Hola, {session?.user?.name}</span>
       <Link
         href="/dashboard"
         className="rounded-md bg-btn-primary px-4 py-2 text-white font-medium hover:opacity-90 transition-opacity"
