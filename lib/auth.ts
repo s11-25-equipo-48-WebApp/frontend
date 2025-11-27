@@ -12,7 +12,7 @@ declare module 'next-auth' {
       image?: string | null
       role?: string
       estado?: string
-      accessToken: JWT
+      accessToken: string
     } | null
   }
 }
@@ -29,11 +29,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       authorize: async (credentials) => {
         try {
           const { email, password } = credentials;
-          const {data} = await api.post('/auth/login', { email, password });
+          const { data } = await api.post('/auth/login', { email, password });
           if (!data || !data.user || !data.accessToken) {
             return null;
           }
-
           return {
             accessToken: data.accessToken,
             ...data.user
@@ -52,7 +51,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Retorna true si el usuario está autenticado
       return !!auth;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         const userComplete = user as AdapterUser & {
           name: string
@@ -60,7 +59,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           image: string
           estado: string
           role: string
-          accessToken: JWT
+          accessToken: string
         };
         token.id = userComplete.id;
         token.email = userComplete.email;
@@ -70,19 +69,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.role = userComplete.role;
         token.accessToken = userComplete.accessToken;
       }
-        return token;
-
+      if (trigger === 'update' && session.user) {
+        try {
+          token.accessToken = session.user.accessToken;
+        } catch (error) {
+          return token;
+        }
+      }
+      return token;
     },
     session(params) {
       const { session, token } = params;
-        if (session.user && token.id) {
-          session.user.id = token.id as string;
-          session.user.email = token.email as string;
-          session.user.name = token.name as string;
-          session.user.image = token.image as string;
-          session.user.estado = token.estado as string;
-          session.user.role = token.role as string;
-          session.user.accessToken = token.accessToken as JWT;
+      if (session.user && token.id) {
+        session.user.id = token.id as string;
+        session.user.email = token.email as string;
+        session.user.name = token.name as string;
+        session.user.image = token.image as string;
+        session.user.estado = token.estado as string;
+        session.user.role = token.role as string;
+        session.user.accessToken = token.accessToken as string;
       }
       return session;
     },
