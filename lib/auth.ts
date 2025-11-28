@@ -1,8 +1,42 @@
+import { refreshAccessTokenServer } from '@/hooks/useRefreshToken.server';
 import api from '@/services/config';
 import NextAuth from 'next-auth';
 import { AdapterUser } from 'next-auth/adapters';
 import { JWT } from 'next-auth/jwt';
 import Credentials from 'next-auth/providers/credentials';
+
+// Función para decodificar el JWT del backend y obtener el tiempo de expiración
+function decodeJWT(token: string): { exp: number } | null {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error('Error decoding JWT:', error);
+    return null;
+  }
+}
+
+// Función para verificar si el accessToken del backend está por vencer (menos de 5 minutos)
+function isAccessTokenExpiringSoon(accessToken: string): boolean {
+  const decoded = decodeJWT(accessToken);
+  if (!decoded || !decoded.exp) {
+    return true; // Si no se puede decodificar, asumir que está vencido
+  }
+
+  const currentTime = Math.floor(Date.now() / 1000); // Tiempo actual en segundos
+  const timeUntilExpiry = decoded.exp - currentTime;
+  const fiveMinutes = 5 * 60; // 5 minutos en segundos
+
+  return timeUntilExpiry < fiveMinutes;
+}
+
 declare module 'next-auth' {
   interface Session {
     user: {
@@ -69,6 +103,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.role = userComplete.role;
         token.accessToken = userComplete.accessToken;
       }
+      // Verificar si el accessToken del backend está por vencer y refrescarlo
+      if (token.accessToken && typeof token.accessToken === 'string') {
+        if (isAccessTokenExpiringSoon(token.accessToken)) {
+          console.log('AccessToken expiring soon, refreshing...');
+          const newAccessToken = await refreshAccessTokenServer({ accessToken: token.accessToken });
+          if (newAccessToken) {
+            token.accessToken = newAccessToken;
+            console.log('AccessToken refreshed successfully');
+          } else {
+            console.error('Failed to refresh accessToken');
+          }
+        }
+      }
+
       if (trigger === 'update' && session.user) {
         try {
           token.accessToken = session.user.accessToken;
@@ -94,7 +142,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   session: {
     strategy: 'jwt',
-    maxAge: 60 * 60  // 1 hora
+    maxAge: 900 // 15 minutos
   },
   trustHost: true // Importante para producción (Vercel, etc.)
 });
