@@ -13,6 +13,7 @@ import { handleUpload } from '@/hooks/useApiYoutube';
 import { uploadToCloudinary } from '@/hooks/useCloudinary';
 import { useCategories } from '@/hooks/useCategories';
 import { useSession } from 'next-auth/react';
+import { useStore } from '@/store/zustand';
 
 type MediaType = 'none' | 'video' | 'image';
 
@@ -29,6 +30,7 @@ export default function CreateTestimonyPage() {
     const [mediaType, setMediaType] = useState<MediaType>('none');
     const [videoFile, setVideoFile] = useState<File | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
+    const { currentOrganization } = useStore()
     const { data: session } = useSession()
     // Obtener categorías desde la API
     const { data: categories, isLoading: categoriesLoading } = useCategories();
@@ -100,7 +102,7 @@ export default function CreateTestimonyPage() {
                 ...(media_url && { media_url }),
             };
             // Enviar a la API
-            const response = await api.post(`/organizations/f7cfbd7d-cf82-4afa-bbea-26ddb8708739/testimonios`, payload, {
+            const response = await api.post(`/organizations/${currentOrganization}/testimonios`, payload, {
                 headers: {
                     'Authorization': `Bearer ${session?.user?.accessToken}`
                 }
