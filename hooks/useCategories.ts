@@ -16,7 +16,7 @@ export function useCategories() {
     return useQuery({
         queryKey: ['categories', currentOrganization],
         queryFn: async () => {
-            const response = await api.get<Category[]>(`/organizations/${currentOrganization}/categories`, {
+            const response = await api.get<Category[]>(`/organizations/826d79c8-2a57-484a-8a16-7ad54e681105/categories`, {
                 headers: {
                     'Authorization': `Bearer ${session?.user?.accessToken}`
                 }
