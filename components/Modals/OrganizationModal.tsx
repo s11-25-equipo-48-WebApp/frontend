@@ -27,13 +27,13 @@ const OrganizationModal: React.FC<OrganizationModalProps> = ({
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
 
   useEffect(() => {
     if (organization) {
       setFormData({
-        name: organization.name,
-        description: organization.description,
+        name: organization.name ?? "",
+        description: organization.description ?? "",
       });
     } else {
       setFormData({
@@ -48,16 +48,11 @@ const OrganizationModal: React.FC<OrganizationModalProps> = ({
     setLoading(true);
     setError(null);
 
-    try {
-      const url = organization
-        ? `/organization/${organization.id}`
-        : "/organization";
+    const url = organization ? `/organization/${organization.id}` : "/organization";
+    const method = organization ? "patch" : "post";
 
-      const method = organization ? "patch" : "post";
-
-      const token = session?.user?.accessToken;
-
-      const response = await api.request({
+    const doRequest = async (token?: string | null) => {
+      return api.request({
         url,
         method,
         data: formData,
@@ -66,14 +61,39 @@ const OrganizationModal: React.FC<OrganizationModalProps> = ({
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
+    };
 
-      if (!response || (response.status && response.status >= 400)) {
-        throw new Error("Error al guardar la organización");
-      }
+    try {
+      const token = session?.user?.accessToken as string | undefined;
+      await doRequest(token);
 
       onSuccess();
       onClose();
-    } catch (err) {
+    } catch (err: any) {
+      const status = err?.response?.status;
+      // If unauthorized/forbidden, try to refresh token and retry once
+      if (status === 401 || status === 403) {
+        try {
+          const refreshResp = await api.post("/auth/refresh");
+          const newToken = refreshResp?.data?.accessToken;
+          if (newToken) {
+            // update next-auth session with new token if available
+            try {
+              await update?.({ user: { ...(session?.user as any), accessToken: newToken } });
+            } catch (uErr) {
+              // ignore update errors
+            }
+
+            await doRequest(newToken);
+            onSuccess();
+            onClose();
+            return;
+          }
+        } catch (refreshErr) {
+          // fallthrough to set error below
+        }
+      }
+
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
       setLoading(false);
@@ -160,6 +180,8 @@ const OrganizationModal: React.FC<OrganizationModalProps> = ({
             <button
               type="button"
               className="ml-auto px-8 py-2 cursor-pointer bg-winered border-white border-2 text-white rounded-full hover:bg-winered/90 transition-colors font-medium disabled:opacity-50"
+              onClick={handleSubmit}
+              disabled={loading}
             >
               {loading ? "Guardando..." : organization ? "Actualizar" : "Crear"}
             </button>

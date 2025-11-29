@@ -7,7 +7,7 @@ import UserInfo from "@/components/UserInfo";
 import OrganizationModal from "@/components/Modals/OrganizationModal";
 import api from "@/services/config";
 import { useState, useEffect } from "react";
-import { SquarePen, Users } from "lucide-react";
+import { SquarePen, Users, Trash2 } from "lucide-react";
 interface Organization {
   id: number;
   name: string;
@@ -19,7 +19,7 @@ interface Organization {
 
 export default function Home() {
   const { setCurrentOrganization } = useStore();
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
 
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,6 +70,54 @@ export default function Home() {
     e.stopPropagation();
     setSelectedOrganization(organization);
     setIsModalOpen(true);
+  };
+
+  const handleDelete = async (organizationId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const confirmed = confirm("¿Seguro que deseas eliminar esta organización?");
+    if (!confirmed) return;
+
+    try {
+      setLoading(true);
+
+      const token = session?.user?.accessToken as string | undefined;
+
+      await api.delete(`/organization/${organizationId}`, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : undefined,
+        },
+      });
+
+      // refresh list
+      fetchOrganizations();
+    } catch (err: any) {
+      const status = err?.response?.status;
+      if (status === 401 || status === 403) {
+        try {
+          const refreshResp = await api.post("/auth/refresh");
+          const newToken = refreshResp?.data?.accessToken;
+          if (newToken) {
+            try {
+              await update?.({
+                user: { ...(session?.user as any), accessToken: newToken },
+              });
+            } catch (uErr) {}
+
+            await api.delete(`/organization/${organizationId}`, {
+              headers: { Authorization: `Bearer ${newToken}` },
+            });
+
+            fetchOrganizations();
+            return;
+          }
+        } catch (refreshErr) {}
+      }
+
+      console.error("Error deleting organization:", err);
+      setError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleModalClose = () => {
@@ -152,12 +200,21 @@ export default function Home() {
                     <span className="px-3 py-1 border-2 border-winered text-skyblue text-sm font-medium rounded-full">
                       {organization.role}
                     </span>
-                    <button
-                      className="p-2 transform hover:scale-110 transition-colors"
-                      onClick={(e) => handleEdit(organization, e)}
-                    >
-                      <SquarePen size={28} className="text-skyblue" />
-                    </button>
+                    <div>
+                      <button
+                        className="p-2 transform hover:scale-110 transition-colors"
+                        onClick={(e) => handleEdit(organization, e)}
+                      >
+                        <SquarePen size={28} className="text-skyblue" />
+                      </button>
+                      <button
+                        className="p-2 ml-2 text-red-600 hover:text-red-700"
+                        onClick={(e) => handleDelete(organization.id, e)}
+                        title="Eliminar organización"
+                      >
+                        <Trash2 size={28} className="text-winered" />
+                      </button>
+                    </div>
                   </div>
 
                   <div className="px-6 py-14 flex flex-col items-center text-center">
