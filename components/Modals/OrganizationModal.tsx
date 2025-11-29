@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { useSession } from "next-auth/react";
+import useRefreshAccessTokenClient from "@/hooks/useRefreshToken.client";
 import api from "@/services/config";
 import Button from "@/components/Button";
 
@@ -28,6 +29,7 @@ const OrganizationModal: React.FC<OrganizationModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { data: session, update } = useSession();
+  const refreshAccessToken = useRefreshAccessTokenClient();
 
   useEffect(() => {
     if (organization) {
@@ -48,7 +50,9 @@ const OrganizationModal: React.FC<OrganizationModalProps> = ({
     setLoading(true);
     setError(null);
 
-    const url = organization ? `/organization/${organization.id}` : "/organization";
+    const url = organization
+      ? `/organization/${organization.id}`
+      : "/organization";
     const method = organization ? "patch" : "post";
 
     const doRequest = async (token?: string | null) => {
@@ -74,16 +78,8 @@ const OrganizationModal: React.FC<OrganizationModalProps> = ({
       // If unauthorized/forbidden, try to refresh token and retry once
       if (status === 401 || status === 403) {
         try {
-          const refreshResp = await api.post("/auth/refresh");
-          const newToken = refreshResp?.data?.accessToken;
+          const newToken = await refreshAccessToken();
           if (newToken) {
-            // update next-auth session with new token if available
-            try {
-              await update?.({ user: { ...(session?.user as any), accessToken: newToken } });
-            } catch (uErr) {
-              // ignore update errors
-            }
-
             await doRequest(newToken);
             onSuccess();
             onClose();

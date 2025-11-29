@@ -7,6 +7,7 @@ import UserInfo from "@/components/UserInfo";
 import OrganizationModal from "@/components/Modals/OrganizationModal";
 import api from "@/services/config";
 import { useState, useEffect } from "react";
+import useRefreshAccessTokenClient from "@/hooks/useRefreshToken.client";
 import { SquarePen, Users, Trash2 } from "lucide-react";
 interface Organization {
   id: number;
@@ -20,6 +21,7 @@ interface Organization {
 export default function Home() {
   const { setCurrentOrganization } = useStore();
   const { data: session, update } = useSession();
+  const refreshAccessToken = useRefreshAccessTokenClient();
 
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,15 +96,8 @@ export default function Home() {
       const status = err?.response?.status;
       if (status === 401 || status === 403) {
         try {
-          const refreshResp = await api.post("/auth/refresh");
-          const newToken = refreshResp?.data?.accessToken;
+          const newToken = await refreshAccessToken();
           if (newToken) {
-            try {
-              await update?.({
-                user: { ...(session?.user as any), accessToken: newToken },
-              });
-            } catch (uErr) {}
-
             await api.delete(`/organization/${organizationId}`, {
               headers: { Authorization: `Bearer ${newToken}` },
             });
@@ -127,6 +122,15 @@ export default function Home() {
 
   const handleModalSuccess = () => {
     fetchOrganizations();
+  };
+
+  const formatDate = (dateString: string) => {
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return dateString;
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
   return (
@@ -238,7 +242,7 @@ export default function Home() {
                     </div>
 
                     <span className="text-black font-semibold">
-                      {organization.createdAt}
+                      {formatDate(organization.createdAt)}
                     </span>
                   </div>
                 </div>
