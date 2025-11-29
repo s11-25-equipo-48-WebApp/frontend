@@ -3,35 +3,82 @@ import { useStore } from "@/store/zustand";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import Button from "@/components/Button";
-import { SquarePen, Users } from "lucide-react";
 import UserInfo from "@/components/UserInfo";
-
-const organizations = [
-  {
-    id: 1,
-    name: "Organization 1",
-    description: "Description 1",
-    role: "Admin",
-    editors: 5,
-    createdAt: "2024-01-15",
-  },
-  {
-    id: 2,
-    name: "Organization 2",
-    description: "Description 2",
-    role: "Editor",
-    editors: 3,
-    createdAt: "2024-02-20",
-  },
-];
+import OrganizationModal from "@/components/Modals/OrganizationModal";
+import api from "@/services/config";
+import { useState, useEffect } from "react";
+import { SquarePen, Users } from "lucide-react";
+interface Organization {
+  id: number;
+  name: string;
+  description: string;
+  role: string;
+  editors: number;
+  createdAt: string;
+}
 
 export default function Home() {
   const { setCurrentOrganization } = useStore();
   const { data: session } = useSession();
 
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedOrganization, setSelectedOrganization] =
+    useState<Organization | null>(null);
+
+  const fetchOrganizations = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const resp = await api.get("/organization/my-organizations", {
+        headers: {
+          Authorization: `Bearer ${session?.user?.accessToken}`,
+        },
+      });
+
+      const data = resp.data;
+      setOrganizations(data);
+    } catch (err) {
+      console.error("Error fetching organizations:", err);
+      setError(err instanceof Error ? err.message : "Error desconocido");
+      setOrganizations([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (session?.user) {
+      fetchOrganizations();
+    }
+  }, [session]);
+
   const toggleOrganization = (organizationId: string) => {
     setCurrentOrganization(organizationId);
     redirect("/dashboard");
+  };
+
+  const handleCreateNew = () => {
+    setSelectedOrganization(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (organization: Organization, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedOrganization(organization);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedOrganization(null);
+  };
+
+  const handleModalSuccess = () => {
+    fetchOrganizations();
   };
 
   return (
@@ -51,65 +98,96 @@ export default function Home() {
 
       {session?.user ? (
         <div className="mx-auto max-w-7xl px-4 pb-8">
-          <div className="flex justify-between items-center mx-auto max-w-7xl mt-8 mb-12 px-4">
-            <div className="bg-winered rounded-full px-6 py-4">
-              <h2 className="text-3xl font-semibold text-white">
-                Sus organizaciones
-              </h2>
-            </div>
-            <Button variant="wineAlt">Crear nueva organización</Button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {organizations.map((organization) => (
-              <div
-                key={organization.id}
-                className="border-6 border-winered/30 rounded-3xl overflow-hidden bg-card hover:shadow-lg transition-shadow duration-300 cursor-pointer"
-                onClick={() => toggleOrganization(organization.id.toString())}
-              >
-                <div className="flex items-center justify-between px-6 py-3">
-                  <span className="px-3 py-1 border-2 border-winered text-skyblue text-sm font-medium rounded-full">
-                    {organization.role}
-                  </span>
-                  <button
-                    className="p-2 transform hover:scale-110 transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Aquí la lógica para editar
-                    }}
-                  >
-                    <SquarePen size={28} className="text-skyblue" />
-                  </button>
-                </div>
+          <div className="mx-auto max-w-7xl mt-8 mb-12 px-4">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+              <div className="bg-winered rounded-full px-6 py-2 w-fit">
+                <h2 className="text-3xl font-semibold text-white">
+                  Sus organizaciones
+                </h2>
+              </div>
 
-                {/* Card Body */}
-                <div className="px-6 py-14 flex flex-col items-center text-center">
+              <Button
+                variant="wineAlt"
+                size="fit"
+                className="px-4"
+                onClick={handleCreateNew}
+              >
+                Crear nueva organización
+              </Button>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-winered"></div>
+            </div>
+          ) : error || organizations.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="mx-auto max-w-md">
+                <div className="bg-card border-4 border-winered/30 rounded-3xl p-8">
+                  <Users
+                    size={64}
+                    className="mx-auto text-foreground/20 mb-4"
+                  />
                   <h3 className="text-xl font-bold text-foreground mb-2">
-                    {organization.name}
+                    No tienes organizaciones
                   </h3>
-                  <p className="text-foreground/60 text-sm">
-                    {organization.description}
+                  <p className="text-foreground/60 mb-6">
+                    {error
+                      ? "No se pudieron cargar las organizaciones. Intenta nuevamente."
+                      : "Comienza creando tu primera organización para empezar a trabajar."}
                   </p>
                 </div>
-
-                {/* Card Footer */}
-                <div className="px-6 py-4 text-xl  flex items-center justify-between">
-                  <div>
-                    <Users
-                      size={28}
-                      className="inline-block mr-4 text-yellow-500"
-                    />
-                    <span className="text-skyblue font-bold">
-                      {organization.editors} Editores
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {organizations.map((organization) => (
+                <div
+                  key={organization.id}
+                  className="border-6 border-winered/30 rounded-3xl overflow-hidden bg-card hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+                  onClick={() => toggleOrganization(organization.id.toString())}
+                >
+                  <div className="flex items-center justify-between px-6 py-3">
+                    <span className="px-3 py-1 border-2 border-winered text-skyblue text-sm font-medium rounded-full">
+                      {organization.role}
                     </span>
+                    <button
+                      className="p-2 transform hover:scale-110 transition-colors"
+                      onClick={(e) => handleEdit(organization, e)}
+                    >
+                      <SquarePen size={28} className="text-skyblue" />
+                    </button>
                   </div>
 
-                  <span className="text-black font-semibold">
-                    {organization.createdAt}
-                  </span>
+                  <div className="px-6 py-14 flex flex-col items-center text-center">
+                    <h3 className="text-xl font-bold text-foreground mb-2">
+                      {organization.name}
+                    </h3>
+                    <p className="text-foreground/60 text-sm">
+                      {organization.description}
+                    </p>
+                  </div>
+
+                  <div className="px-6 py-4 text-xl flex items-center justify-between">
+                    <div>
+                      <Users
+                        size={28}
+                        className="inline-block mr-4 text-yellow-500"
+                      />
+                      <span className="text-skyblue font-bold">
+                        {organization.editors} Editores
+                      </span>
+                    </div>
+
+                    <span className="text-black font-semibold">
+                      {organization.createdAt}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         <div className="mx-auto max-w-7xl px-4 text-center py-12">
@@ -118,6 +196,13 @@ export default function Home() {
           </p>
         </div>
       )}
+
+      <OrganizationModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onSuccess={handleModalSuccess}
+        organization={selectedOrganization}
+      />
     </main>
   );
 }

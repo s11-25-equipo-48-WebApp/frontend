@@ -51,7 +51,7 @@ export default function Button({
 
     wineAlt: clsx(
       "rounded-3xl text-lg shadow-3xl bg-yellow-50 text-winered hover:opacity-90",
-      size === "fit" ? "p-2 w-fit" : "p-2 w-full"
+      size === "fit" ? "p-2  w-fit" : "p-2 w-full"
     ),
   };
 
