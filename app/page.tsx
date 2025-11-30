@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import Button from "@/components/Button";
 import UserInfo from "@/components/UserInfo";
 import OrganizationModal from "@/components/Modals/OrganizationModal";
+import DeleteModal from "@/components/Modals/DeleteModal";
 import api from "@/services/config";
 import { useState, useEffect } from "react";
 import useRefreshAccessTokenClient from "@/hooks/useRefreshToken.client";
@@ -28,6 +29,9 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrganization, setSelectedOrganization] =
+    useState<Organization | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [organizationToDelete, setOrganizationToDelete] =
     useState<Organization | null>(null);
 
   const fetchOrganizations = async () => {
@@ -74,46 +78,21 @@ export default function Home() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (organizationId: number, e: React.MouseEvent) => {
+  const openDeleteModal = (organization: Organization, e: React.MouseEvent) => {
     e.stopPropagation();
-    const confirmed = confirm("¿Seguro que deseas eliminar esta organización?");
-    if (!confirmed) return;
+    setOrganizationToDelete(organization);
+    setIsDeleteModalOpen(true);
+  };
 
-    try {
-      setLoading(true);
+  const handleDeleteClose = () => {
+    setIsDeleteModalOpen(false);
+    setOrganizationToDelete(null);
+  };
 
-      const token = session?.user?.accessToken as string | undefined;
-
-      await api.delete(`/organization/${organizationId}`, {
-        headers: {
-          Authorization: token ? `Bearer ${token}` : undefined,
-        },
-      });
-
-      // refresh list
-      fetchOrganizations();
-    } catch (err: any) {
-      const status = err?.response?.status;
-      if (status === 401 || status === 403) {
-        try {
-          const newToken = await refreshAccessToken();
-          if (newToken) {
-            await api.delete(`/organization/${organizationId}`, {
-              headers: { Authorization: `Bearer ${newToken}` },
-            });
-
-            fetchOrganizations();
-            return;
-          }
-        } catch (refreshErr) { }
-      }
-
-      console.error("Error deleting organization:", err);
-      setError(err instanceof Error ? err.message : "Error desconocido");
-    } finally {
-      await refreshAccessToken()
-      setLoading(false);
-    }
+  const handleDeleteSuccess = () => {
+    fetchOrganizations();
+    setIsDeleteModalOpen(false);
+    setOrganizationToDelete(null);
   };
 
   const handleModalClose = () => {
@@ -214,7 +193,7 @@ export default function Home() {
                       </button>
                       <button
                         className="p-2 ml-2 text-red-600 hover:text-red-700"
-                        onClick={(e) => handleDelete(organization.id, e)}
+                        onClick={(e) => openDeleteModal(organization, e)}
                         title="Eliminar organización"
                       >
                         <Trash2 size={28} className="text-winered" />
@@ -264,6 +243,13 @@ export default function Home() {
         onClose={handleModalClose}
         onSuccess={handleModalSuccess}
         organization={selectedOrganization}
+      />
+
+      <DeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleDeleteClose}
+        onSuccess={handleDeleteSuccess}
+        organization={organizationToDelete}
       />
     </main>
   );
