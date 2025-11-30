@@ -105,12 +105,13 @@ export default function Home() {
             fetchOrganizations();
             return;
           }
-        } catch (refreshErr) {}
+        } catch (refreshErr) { }
       }
 
       console.error("Error deleting organization:", err);
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
+      await refreshAccessToken()
       setLoading(false);
     }
   };

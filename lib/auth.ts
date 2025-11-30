@@ -142,7 +142,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   session: {
     strategy: 'jwt',
-    maxAge: 900 // 15 minutos
+    maxAge: 60 * 60 * 24 // 1 día
   },
   trustHost: true // Importante para producción (Vercel, etc.)
 });

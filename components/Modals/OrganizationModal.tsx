@@ -70,7 +70,7 @@ const OrganizationModal: React.FC<OrganizationModalProps> = ({
     try {
       const token = session?.user?.accessToken as string | undefined;
       await doRequest(token);
-
+      await refreshAccessToken();
       onSuccess();
       onClose();
     } catch (err: any) {
