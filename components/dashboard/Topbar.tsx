@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Search, X, CloudUpload } from "lucide-react";
 import Button from "@/components/Button";
 import SignOutButton from "@/components/SignOutButton";
-import { Sign } from "crypto";
+
 interface TopBarProps {
   user: {
     name?: string | null;
@@ -66,8 +66,16 @@ export default function Topbar({ user }: TopBarProps) {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 flex items-start justify-end p-8 z-50">
-          <div className="bg-[#DBD1D5] rounded-2xl shadow-2xl p-6 w-96 mt-20 mr-8 animate-in slide-in-from-right">
+        <div className="fixed inset-0 z-50 flex items-start justify-end p-8">
+          <div
+            className="absolute inset-0 bg-black/30"
+            onClick={() => setShowModal(false)}
+          />
+
+          <div
+            className="relative bg-[#DBD1D5] rounded-2xl shadow-2xl p-6 w-96 mt-20 mr-8 animate-in slide-in-from-right"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex justify-end mb-2">
               <button
                 onClick={() => setShowModal(false)}
