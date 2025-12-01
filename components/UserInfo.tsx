@@ -1,6 +1,7 @@
 "use client";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import SignOutButton from "./SignOutButton";
 
 export default function UserInfo() {
   const { data: session, status } = useSession();
@@ -29,6 +30,7 @@ export default function UserInfo() {
       >
         Dashboard
       </Link>
+      <SignOutButton />
     </div>
   );
 }
