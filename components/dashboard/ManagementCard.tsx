@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { X } from "lucide-react";
-import  Button  from "@/components/Button";
+import Button from "@/components/Button";
 
 interface ManagementCardProps {
   icon: ReactNode;
@@ -17,7 +17,7 @@ interface ManagementCardProps {
   isLoading?: boolean;
 }
 
-export function ManagementCard({
+export default function ManagementCard({
   icon,
   title,
   description,
@@ -30,12 +30,13 @@ export function ManagementCard({
   isLoading = false,
 }: ManagementCardProps) {
   return (
-    <div className="w-full max-w-md mx-auto bg-card border border-border rounded-lg shadow-md overflow-hidden">
+    <div className="w-full max-w-lg mx-auto bg-white rounded-lg shadow-xl p-2 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-card">
+      <div className="flex items-center justify-between px-6 py-4 bg-white ">
         <div className="flex items-center gap-3">
-          <div className="text-foreground">{icon}</div>
-          <span className="text-sm font-medium text-foreground" />
+          <div className="text-gray-600 border shadow-lg border-gray-200 rounded-sm p-3">
+            {icon}
+          </div>
         </div>
         <button
           onClick={onClose}
@@ -48,9 +49,8 @@ export function ManagementCard({
 
       {/* Body */}
       <div className="px-6 py-5">
-        {/* Título y descripción */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-foreground mb-2">
+          <h2 className="text-xl font-semibold text-foreground mb-2">
             {title}
           </h2>
           <p className="text-sm text-muted-foreground">{description}</p>
@@ -60,20 +60,11 @@ export function ManagementCard({
         <div className="space-y-4">{children}</div>
       </div>
 
-      {/* Footer */}
-      <div className="flex gap-3 px-6 py-4 border-t border-border bg-card">
-        <Button
-          variant="wineAlt"
-          onClick={onReset}
-          disabled={isLoading}
-        >
+      <div className="flex gap-3 px-6 py-4 bg-white ">
+        <Button variant="wineAlt" onClick={onReset} disabled={isLoading}>
           {resetLabel}
         </Button>
-        <Button
-          variant="wine"
-          onClick={onConfirm}
-          disabled={isLoading}
-        >
+        <Button variant="wine" onClick={onConfirm} disabled={isLoading}>
           {confirmLabel}
         </Button>
       </div>
