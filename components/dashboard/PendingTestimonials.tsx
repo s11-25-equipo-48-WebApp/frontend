@@ -1,8 +1,8 @@
-'use client';
-import { useQuery } from '@tanstack/react-query';
-import api from '@/services/config';
-import Link from 'next/link';
-import Button from '../Button';
+"use client";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/services/config";
+import Link from "next/link";
+import Button from "../Button";
 
 interface PendingTestimonial {
   id: string;
@@ -13,19 +13,39 @@ interface PendingTestimonial {
 
 export default function PendingTestimonials() {
   const { data: pending, isLoading } = useQuery<PendingTestimonial[]>({
-    queryKey: ['pending-testimonials'],
+    queryKey: ["pending-testimonials"],
     queryFn: async () => {
-      const { data } = await api.get('/testimonials/pending');
+      const { data } = await api.get("/testimonials/pending");
       return data;
     },
   });
 
   // Mock data
   const mockPending: PendingTestimonial[] = [
-    { id: '1', client: 'Juan P.', course: 'Python Avanzado', receivedDate: 'Jun 24, 2025' },
-    { id: '2', client: 'Natan B.', course: 'Full Stack Pro', receivedDate: 'Mar 10, 2025' },
-    { id: '3', client: 'Rodrigo G.', course: 'Python Principiante', receivedDate: 'Nov 10, 2025' },
-    { id: '4', client: 'Orlando D.', course: 'Automatización con Shell', receivedDate: 'Dec 20, 2025' },
+    {
+      id: "1",
+      client: "Juan P.",
+      course: "Python Avanzado",
+      receivedDate: "Jun 24, 2025",
+    },
+    {
+      id: "2",
+      client: "Natan B.",
+      course: "Full Stack Pro",
+      receivedDate: "Mar 10, 2025",
+    },
+    {
+      id: "3",
+      client: "Rodrigo G.",
+      course: "Python Principiante",
+      receivedDate: "Nov 10, 2025",
+    },
+    {
+      id: "4",
+      client: "Orlando D.",
+      course: "Automatización con Shell",
+      receivedDate: "Dec 20, 2025",
+    },
   ];
 
   const displayPending = pending || mockPending;
@@ -34,17 +54,15 @@ export default function PendingTestimonials() {
     <div className="bg-white rounded-xl shadow-sm border-2 border-pink-500 p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <h2 className="text-xl font-bold text-gray-800">Testimonios pendientes</h2>
+          <h2 className="text-xl font-bold text-gray-800">
+            Testimonios pendientes
+          </h2>
           <span className="px-3 py-1 bg-orange-500 text-white text-sm font-semibold rounded-full">
             {displayPending.length}
           </span>
         </div>
-        <Button variant='ghost' className='p-0'>
-          <Link
-            href="/dashboard/revisiones"
-            className="text-sm font-medium"
-
-          >
+        <Button variant="ghost" className="p-0">
+          <Link href="/dashboard/revisiones" className="text-sm font-medium">
             Ver todo
           </Link>
         </Button>
@@ -67,7 +85,10 @@ export default function PendingTestimonials() {
             {isLoading ? (
               <>
                 {[1, 2, 3].map((i) => (
-                  <tr key={i} className="border-b border-gray-100 animate-pulse">
+                  <tr
+                    key={i}
+                    className="border-b border-gray-100 animate-pulse"
+                  >
                     <td className="py-4 px-4">
                       <div className="h-4 bg-gray-200 rounded w-32 mb-2" />
                       <div className="h-3 bg-gray-200 rounded w-24" />
@@ -91,13 +112,14 @@ export default function PendingTestimonials() {
                     <p className="font-medium text-gray-800">{item.client}</p>
                     <p className="text-sm text-gray-500">{item.course}</p>
                   </td>
-                  <td className="py-4 px-4 text-gray-600">{item.receivedDate}</td>
+                  <td className="py-4 px-4 text-gray-600">
+                    {item.receivedDate}
+                  </td>
                   <td className="py-4 px-4 ">
-                    <Button variant='action' color='orange' className='ml-auto'>
+                    <Button variant="action" color="orange" className="ml-auto">
                       <Link
                         href={`/dashboard/revisiones/${item.id}`}
                         className="text-sm font-medium"
-
                       >
                         Ver detalles
                       </Link>

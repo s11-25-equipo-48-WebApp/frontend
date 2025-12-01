@@ -1,8 +1,4 @@
-"use client";
-import { useState } from "react";
-import { Search, X, CloudUpload } from "lucide-react";
-import Button from "@/components/Button";
-import SignOutButton from "@/components/SignOutButton";
+import { Search, MessageSquare, Bell, Users, BarChart2 } from "lucide-react";
 
 interface TopBarProps {
   user: {
@@ -26,50 +22,32 @@ export default function Topbar({ user }: TopBarProps) {
   };
 
   return (
-    <>
-      <header className="flex items-center justify-between px-8 py-6 bg-white">
-        {/* Centro: Buscador */}
-        <div className="flex-1 flex justify-center">
-          <div className="w-full max-w-xl">
-            <div className="relative group">
-              <input
-                type="text"
-                placeholder="buscar"
-                className="w-full bg-white border border-gray-200 rounded-full py-3 px-6 pl-6 pr-12 text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-100 shadow-sm transition-all"
-              />
-              <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-            </div>
-          </div>
+    <header className="flex items-center justify-between px-8 py-6 bg-white">
+      {/* Izquierda: Saludo y Avatar */}
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xl overflow-hidden">
+          {user?.image ? (
+            <img
+              src={user.image}
+              alt={user.name || ""}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span>{user?.name?.charAt(0) || "U"}</span>
+          )}
         </div>
+        <h1 className="text-2xl font-bold text-gray-700">
+          ¡Hola {user?.name || "Usuario"}!
+        </h1>
+      </div>
 
-        {/* Derecha: Usuario */}
-        <div
-          className="flex items-center gap-4 cursor-pointer hover:opacity-80 transition-opacity"
-          onClick={() => setShowModal(true)}
-        >
-          <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xl overflow-hidden">
-            {user?.image ? (
-              <img
-                src={user.image}
-                alt={user.name || ""}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span>{user?.name?.charAt(0) || "U"}</span>
-            )}
-          </div>
-          <h1 className="text-2xl font-bold text-gray-700">
-            ¡Hola {user?.name || "Usuario"}!
-          </h1>
-        </div>
-      </header>
-
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-start justify-end p-8">
-          <div
-            className="absolute inset-0 bg-black/30"
-            onClick={() => setShowModal(false)}
+      {/* Centro: Buscador */}
+      <div className="flex-1 max-w-xl mx-8">
+        <div className="relative group">
+          <input
+            type="text"
+            placeholder="buscar"
+            className="w-full bg-white border border-gray-200 rounded-full py-3 px-6 pl-6 pr-12 text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-100 shadow-sm transition-all"
           />
 
           <div
