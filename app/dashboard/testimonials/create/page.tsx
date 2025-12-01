@@ -1,5 +1,5 @@
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
 import api from '@/services/config';
@@ -30,8 +30,8 @@ export default function CreateTestimonyPage() {
     const [mediaType, setMediaType] = useState<MediaType>('none');
     const [videoFile, setVideoFile] = useState<File | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
-    const { currentOrganization } = useStore()
-    const { data: session } = useSession()
+    const { currentOrganization } = useStore();
+    const { data: session } = useSession();
     // Obtener categorías desde la API
     const { data: categories, isLoading: categoriesLoading } = useCategories();
 
@@ -55,7 +55,7 @@ export default function CreateTestimonyPage() {
     });
 
     const createTestimonyMutation = useMutation({
-        mutationFn: async (data: any) => {
+        mutationFn: async (data: TestimonyFormData) => {
             let media_url = '';
 
             // Si es un video, subirlo a YouTube
@@ -110,7 +110,7 @@ export default function CreateTestimonyPage() {
             return response.data;
             // return payload;
         },
-        onSuccess: (data) => {
+        onSuccess: () => {
             toast.success('Testimonio creado exitosamente');
             methods.reset();
             setVideoFile(null);
@@ -142,6 +142,68 @@ export default function CreateTestimonyPage() {
         { type: 'video' as MediaType, label: 'Video', icon: RiVideoLine, color: 'text-purple-500', bg: 'bg-purple-100', activeBg: 'bg-purple-500' },
         { type: 'image' as MediaType, label: 'Imagen', icon: RiImageLine, color: 'text-pink-500', bg: 'bg-pink-100', activeBg: 'bg-pink-500' },
     ];
+
+    // Cargar borrador desde sessionStorage si existe
+    useEffect(() => {
+        const loadDraftData = sessionStorage.getItem('loadDraft');
+        if (!loadDraftData) return;
+
+        (async () => {
+            try {
+                const draft = JSON.parse(loadDraftData);
+
+                // Poblar formulario
+                methods.reset({
+                    title: draft.title,
+                    body: draft.body,
+                    category_id: draft.category_id,
+                    email: draft.email,
+                    author: draft.author,
+                    tags: draft.tags,
+                });
+
+                // Establecer tipo de medio
+                setMediaType(draft.mediaType);
+
+                // Recuperar archivos desde IndexedDB si vienen como referencia
+                if (draft.videoFile) {
+                    if (draft.videoFile.id) {
+                        const blob = await import('@/utils/indexedDB').then(m => m.getFile(draft.videoFile.id));
+                        if (blob) {
+                            const file = new File([blob], draft.videoFile.name, { type: draft.videoFile.type });
+                            setVideoFile(file);
+                        }
+                    } else if (draft.videoFile.data) {
+                        // compatibilidad anterior: base64/url
+                        const blob = await fetch(draft.videoFile.data).then(res => res.blob());
+                        const file = new File([blob], draft.videoFile.name, { type: draft.videoFile.type });
+                        setVideoFile(file);
+                    }
+                }
+
+                if (draft.imageFile) {
+                    if (draft.imageFile.id) {
+                        const blob = await import('@/utils/indexedDB').then(m => m.getFile(draft.imageFile.id));
+                        if (blob) {
+                            const file = new File([blob], draft.imageFile.name, { type: draft.imageFile.type });
+                            setImageFile(file);
+                        }
+                    } else if (draft.imageFile.data) {
+                        const blob = await fetch(draft.imageFile.data).then(res => res.blob());
+                        const file = new File([blob], draft.imageFile.name, { type: draft.imageFile.type });
+                        setImageFile(file);
+                    }
+                }
+
+                // Limpiar sessionStorage
+                sessionStorage.removeItem('loadDraft');
+                toast.success('Borrador cargado correctamente');
+            } catch (error) {
+                console.error('Error al cargar borrador:', error);
+                toast.error('Error al cargar el borrador');
+            }
+        })();
+    }, [methods]);
 
     return (
         <div className="space-y-6">
@@ -303,11 +365,59 @@ export default function CreateTestimonyPage() {
                                 type="button"
                                 variant="action"
                                 color='orange'
-                                onClick={() => {
-                                    methods.reset();
-                                    setVideoFile(null);
-                                    setImageFile(null);
-                                    setMediaType('none');
+                                onClick={async () => {
+                                    const formData = methods.getValues();
+
+                                    // Validar que al menos tenga título y cuerpo
+                                    if (!formData.title || !formData.body) {
+                                        toast.error('Por favor completa al menos el título y el cuerpo del testimonio');
+                                        return;
+                                    }
+
+                                    try {
+                                        // Guardar archivos grandes en IndexedDB y almacenar sólo la referencia en el borrador
+                                        let videoFileData = null;
+                                        let imageFileData = null;
+
+                                        if (videoFile) {
+                                            // guardar el Blob/File en IndexedDB y recibir id
+                                            const id = await import('@/utils/indexedDB').then(m => m.saveFile(videoFile));
+                                            videoFileData = {
+                                                name: videoFile.name,
+                                                type: videoFile.type,
+                                                size: videoFile.size,
+                                                id,
+                                            };
+                                        }
+
+                                        if (imageFile) {
+                                            const id = await import('@/utils/indexedDB').then(m => m.saveFile(imageFile));
+                                            imageFileData = {
+                                                name: imageFile.name,
+                                                type: imageFile.type,
+                                                size: imageFile.size,
+                                                id,
+                                            };
+                                        }
+
+                                        // Guardar borrador (sin base64 pesado)
+                                        useStore.getState().saveDraft({
+                                            title: formData.title,
+                                            body: formData.body,
+                                            category_id: formData.category_id,
+                                            email: formData.email,
+                                            author: formData.author,
+                                            tags: formData.tags,
+                                            mediaType: mediaType,
+                                            videoFile: videoFileData,
+                                            imageFile: imageFileData,
+                                        });
+
+                                        toast.success('Borrador guardado en biblioteca');
+                                    } catch (error) {
+                                        toast.error('Error al guardar el borrador');
+                                        console.error(error);
+                                    }
                                 }}
                                 className="sm:w-auto sm:px-8"
                             >
