@@ -1,40 +1,38 @@
-'use client'
-import DashboardStats from '@/components/dashboard/DashboardStats';
-import RecentTestimonials from '@/components/dashboard/RecentTestimonials';
-import CategoriesChart from '@/components/dashboard/CategoriesChart';
-import PendingTestimonials from '@/components/dashboard/PendingTestimonials';
-import { useStore } from '@/store/zustand';
-import { useQuery } from '@tanstack/react-query';
-import api from '@/services/config';
-import Link from 'next/link';
-import { ArrowLeftIcon } from 'lucide-react';
+"use client";
+import DashboardStats from "@/components/dashboard/DashboardStats";
+import RecentTestimonials from "@/components/dashboard/RecentTestimonials";
+import CategoriesChart from "@/components/dashboard/CategoriesChart";
+import PendingTestimonials from "@/components/dashboard/PendingTestimonials";
+import { useStore } from "@/store/zustand";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/services/config";
+import Link from "next/link";
+import { ArrowLeftIcon } from "lucide-react";
 // import api from '@/lib/api';
 export default function DashboardPage() {
   const { currentOrganization } = useStore();
   const { data: organization } = useQuery({
-    queryKey: ['organization', currentOrganization],
+    queryKey: ["organization", currentOrganization],
     queryFn: async () => {
       // const organization = await api.get(`/organizations/${currentOrganization}`)
       // return organization.data
       return {
-        name: 'Organization ' + currentOrganization,
-        description: 'Description ' + currentOrganization,
-      }
+        name: "Organization " + currentOrganization,
+        description: "Description " + currentOrganization,
+      };
     },
-    enabled: !!currentOrganization
-  })
+    enabled: !!currentOrganization,
+  });
   return (
     <>
       <div>
-        <Link className='flex items-center gap-2' href={'/'}><ArrowLeftIcon className="h-6 w-6" /> Volver</Link>
+        <Link className="flex items-center gap-2" href={"/"}>
+          <ArrowLeftIcon className="h-6 w-6" /> Volver
+        </Link>
       </div>
       <div>
-        <p>
-          {organization?.name}
-        </p>
-        <p>
-          {organization?.description}
-        </p>
+        <p>{organization?.name}</p>
+        <p>{organization?.description}</p>
       </div>
       {/* Contenido del dashboard */}
       <div className="space-y-6">

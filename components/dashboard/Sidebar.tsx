@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -7,10 +8,16 @@ import {
   PenSquare,
   BarChart3,
   Image as ImageIcon,
-  List,
-  Users,
+  ChevronDown,
   Settings,
+  Users,
 } from "lucide-react";
+
+// interface Editor {
+//   id: string;
+//   name: string;
+//   status: "active" | "wait" | "offline";
+// }
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -32,13 +39,12 @@ export default function Sidebar() {
       activeBg: "bg-pink-100",
     },
     {
-      href: "/dashboard/crear",
+      href: "/dashboard/testimonials/create",
       icon: PenSquare,
       label: "Crear testimonio",
       iconColor: "text-teal-500",
       activeBg: "bg-teal-100",
     },
-
     {
       href: "/dashboard/analytics",
       icon: BarChart3,
@@ -51,36 +57,46 @@ export default function Sidebar() {
       icon: ImageIcon,
       label: "Biblioteca multimedia",
       iconColor: "text-blue-500",
-      iconBg: "bg-blue-50",
+      activeBg: "bg-blue-100",
     },
     {
-      href: "/dashboard/categorias",
-      icon: List,
+      href: "/dashboard/categories",
+      icon: LayoutDashboard,
       label: "Categorías",
       iconColor: "text-blue-500",
-      iconBg: "bg-blue-50",
+      activeBg: "bg-blue-100",
     },
     {
-      href: "/dashboard/editores",
+      href: "/dashboard/permissions",
       icon: Users,
       label: "Gestionar editores/permisos",
-      iconColor: "text-yellow-600",
-      iconBg: "bg-yellow-50",
+      iconColor: "text-yellow-500",
+      activeBg: "bg-yellow-100",
     },
-  ];
-
-  const bottomItems = [
     {
-      href: "/dashboard/organizaciones",
+      href: "/",
       icon: Settings,
       label: "Mis organizaciones",
-      iconColor: "text-red-500",
-      iconBg: "bg-red-50",
+      iconColor: "text-winered",
+      activeBg: "bg-winered",
     },
   ];
 
+  // const getStatusColor = (status: Editor["status"]) => {
+  //   switch (status) {
+  //     case "active":
+  //       return "border-2 border-green-500 text-green-600"; // Ring style
+  //     case "wait":
+  //       return "border-2 border-yellow-500 text-yellow-600";
+  //     case "offline":
+  //       return "border-2 border-gray-300 text-gray-400";
+  //     default:
+  //       return "border-gray-300";
+  //   }
+  // };
+
   return (
-    <aside className="w-72 bg-[#F5F7F9] rounded-3xl p-4 flex flex-col min-h-[calc(100vh-3rem)]">
+    <aside className="w-full bg-[#F5F7F9] rounded-[2.5rem] p-6 flex flex-col">
       {/* Navigation Menu */}
       <nav className="space-y-1 flex-1 mt-2">
         {menuItems.map((item) => {
@@ -91,19 +107,23 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
-                isActive ? "bg-green-100" : "hover:bg-white/50"
+              className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 group ${
+                isActive ? "bg-[#BCDBB8] shadow-sm" : "hover:bg-white/50"
               }`}
             >
               {/* Icon Container */}
-              <div className={`p-1.5 rounded-md ${item.iconBg}`}>
-                <Icon className={`w-4 h-4 ${item.iconColor}`} />
+              <div
+                className={`p-1 rounded ${isActive ? "" : ""} ${
+                  item.iconColor
+                }`}
+              >
+                <Icon size={26} />
               </div>
 
               <span
-                className={`flex-1 text-sm font-medium ${
+                className={`flex-1 text-sm font-semibold ${
                   isActive
-                    ? "text-gray-700"
+                    ? "text-gray-800"
                     : "text-gray-500 group-hover:text-gray-700"
                 }`}
               >
@@ -113,38 +133,6 @@ export default function Sidebar() {
           );
         })}
       </nav>
-
-      {/* Bottom Items */}
-      <div className="mt-auto pt-4 space-y-1">
-        {bottomItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = pathname === item.href;
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
-                isActive ? "bg-white" : "hover:bg-white/50"
-              }`}
-            >
-              <div className={`p-1.5 rounded-md ${item.iconBg}`}>
-                <Icon className={`w-4 h-4 ${item.iconColor}`} />
-              </div>
-
-              <span
-                className={`flex-1 text-sm font-medium ${
-                  isActive
-                    ? "text-gray-700"
-                    : "text-gray-500 group-hover:text-gray-700"
-                }`}
-              >
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
-      </div>
     </aside>
   );
 }
