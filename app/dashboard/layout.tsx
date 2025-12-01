@@ -15,7 +15,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen ">
       {/* 1. Barra Superior (Header) */}
       <TopBar user={session.user} />
 
@@ -23,7 +23,7 @@ export default async function DashboardLayout({
       <div className="flex p-4 md:p-6 gap-8 max-w-[1600px] mx-auto">
         {/* Sidebar: Ahora es un bloque estático, no fixed */}
         <div className="hidden lg:block shrink-0">
-           <Sidebar /> 
+          <Sidebar />
         </div>
 
         {/* Main Content Area */}

@@ -1,14 +1,14 @@
-import React, { useState } from "react";
-import { X, Trash2 } from "lucide-react";
-import { useSession } from "next-auth/react";
-import useRefreshAccessTokenClient from "@/hooks/useRefreshToken.client";
-import api from "@/services/config";
+import React, { useState } from 'react';
+import { X, Trash2 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import useRefreshAccessTokenClient from '@/hooks/useRefreshToken.client';
+import api from '@/services/config';
 
 interface DeleteModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  organization?: { id: number; name?: string } | null;
+  organization?: { id: number; name?: string; } | null;
 }
 
 const DeleteModal: React.FC<DeleteModalProps> = ({
@@ -40,6 +40,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
     try {
       const token = session?.user?.accessToken as string | undefined;
       await doRequest(token);
+      await refreshAccessToken();
       onSuccess();
       onClose();
     } catch (err: any) {
@@ -58,7 +59,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
         }
       }
 
-      setError(err instanceof Error ? err.message : "Error desconocido");
+      setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
       setLoading(false);
     }
@@ -113,7 +114,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
               onClick={handleConfirm}
               disabled={loading}
             >
-              {loading ? "Eliminando..." : "Eliminar"}
+              {loading ? 'Eliminando...' : 'Eliminar'}
             </button>
             <button
               type="button"
