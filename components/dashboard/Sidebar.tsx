@@ -31,7 +31,7 @@ export default function Sidebar() {
       activeBg: "bg-purple-100",
     },
     {
-      href: "/dashboard/revisiones",
+      href: "/dashboard/pending-reviews",
       icon: FileText,
       label: "Revisiones pendientes",
       badge: "NEW",
@@ -50,7 +50,7 @@ export default function Sidebar() {
       icon: BarChart3,
       label: "Analytics",
       iconColor: "text-red-500",
-      activeBg: "bg-red-100",
+      iconBg: "bg-red-50",
     },
     {
       href: "/dashboard/biblioteca",
@@ -98,7 +98,7 @@ export default function Sidebar() {
   return (
     <aside className="w-full bg-[#F5F7F9] rounded-[2.5rem] p-6 flex flex-col">
       {/* Navigation Menu */}
-      <nav className="space-y-2 flex-1">
+      <nav className="space-y-1 flex-1 mt-2">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
@@ -129,12 +129,6 @@ export default function Sidebar() {
               >
                 {item.label}
               </span>
-
-              {item.badge && (
-                <span className="px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">
-                  {item.badge}
-                </span>
-              )}
             </Link>
           );
         })}
