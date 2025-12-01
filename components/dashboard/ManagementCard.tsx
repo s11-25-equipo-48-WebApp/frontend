@@ -1,7 +1,6 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { X } from "lucide-react";
 import Button from "@/components/Button";
 
 interface ManagementCardProps {
@@ -9,7 +8,6 @@ interface ManagementCardProps {
   title: string;
   description: string;
   children: ReactNode; // Espacio para los inputs
-  onClose?: () => void;
   onConfirm?: () => void;
   onReset?: () => void;
   confirmLabel?: string;
@@ -22,7 +20,6 @@ export default function ManagementCard({
   title,
   description,
   children,
-  onClose,
   onConfirm,
   onReset,
   confirmLabel = "Confirmar",
@@ -30,7 +27,7 @@ export default function ManagementCard({
   isLoading = false,
 }: ManagementCardProps) {
   return (
-    <div className="w-full max-w-lg mx-auto bg-white rounded-lg shadow-xl p-2 overflow-hidden">
+    <div className="w-full max-w-xl my-12 mx-auto py-8 bg-white rounded-lg shadow-xl p-2 overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 bg-white ">
         <div className="flex items-center gap-3">
@@ -38,13 +35,6 @@ export default function ManagementCard({
             {icon}
           </div>
         </div>
-        <button
-          onClick={onClose}
-          className="p-1 hover:bg-secondary rounded-md transition-colors text-muted-foreground hover:text-foreground"
-          aria-label="Cerrar"
-        >
-          <X size={20} />
-        </button>
       </div>
 
       {/* Body */}
@@ -53,7 +43,7 @@ export default function ManagementCard({
           <h2 className="text-xl font-semibold text-foreground mb-2">
             {title}
           </h2>
-          <p className="text-sm text-muted-foreground">{description}</p>
+          <p className="text-md text-gray-600">{description}</p>
         </div>
 
         {/* Espacio para inputs dinámicos */}

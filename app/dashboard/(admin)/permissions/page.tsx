@@ -49,8 +49,7 @@ export default function AddUserCard({ onClose, onConfirm }: AddUserCardProps) {
     <ManagementCard
       icon={<Users size={24} />}
       title="Invitar colaboradores"
-      description="Tu organización ha sido creada. Invita colegas para colaborar en tu organización."
-      onClose={onClose}
+      description="Tu organización ha sido creada. Invita colegas para colaborar en tu organización. "
       onConfirm={handleConfirm}
       onReset={handleReset}
       confirmLabel="Confirmar"
@@ -58,7 +57,7 @@ export default function AddUserCard({ onClose, onConfirm }: AddUserCardProps) {
       isLoading={isLoading}
     >
       <div>
-        <h2 className="text-foreground">
+        <h2 className="text-gray-600">
           ingresar los correos de los colaboradores:
         </h2>
       </div>
@@ -71,7 +70,7 @@ export default function AddUserCard({ onClose, onConfirm }: AddUserCardProps) {
               placeholder="correo@ejemplo.com"
               value={email}
               onChange={(e) => handleEmailChange(index, e.target.value)}
-              className="flex-1 py-2 px-4 border border-gray-300 rounded-md outline-0 focus:border-foreground/50"
+              className="flex-1 py-3 px-4 border border-gray-300 rounded-md outline-0 focus:border-foreground/50"
               disabled={isLoading}
             />
             {emails.length > 1 && (

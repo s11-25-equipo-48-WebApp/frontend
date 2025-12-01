@@ -60,14 +60,14 @@ export default function Sidebar() {
       activeBg: "bg-blue-100",
     },
     {
-      href: "/dashboard/categorias",
+      href: "/dashboard/categories",
       icon: LayoutDashboard,
       label: "Categorías",
       iconColor: "text-blue-500",
       activeBg: "bg-blue-100",
     },
     {
-      href: "/dashboard/permisos",
+      href: "/dashboard/permissions",
       icon: Users,
       label: "Gestionar editores/permisos",
       iconColor: "text-yellow-500",
