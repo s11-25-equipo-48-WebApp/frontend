@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
-  const isAuthenticated = !!req.auth;
+  const isAuthenticated = !!req.auth?.user;
   // Rutas públicas
   const publicRoutes = ['/', '/auth/login', '/auth/register', '/public', '/_next/static',];
   const isPublicRoute = publicRoutes.includes(pathname);

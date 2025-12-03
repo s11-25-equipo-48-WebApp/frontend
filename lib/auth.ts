@@ -1,24 +1,22 @@
-import { refreshAccessTokenServer } from "@/hooks/useRefreshToken.server";
-import api from "@/services/config";
-import NextAuth from "next-auth";
-import { AdapterUser } from "next-auth/adapters";
-import { JWT } from "next-auth/jwt";
-import Credentials from "next-auth/providers/credentials";
+
+import api from '@/services/config';
+import NextAuth from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
 
 // Función para decodificar el JWT del backend y obtener el tiempo de expiración
 function decodeJWT(token: string): { exp: number } | null {
   try {
-    const base64Url = token.split(".")[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
     const jsonPayload = decodeURIComponent(
       atob(base64)
-        .split("")
-        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-        .join("")
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
     );
     return JSON.parse(jsonPayload);
   } catch (error) {
-    console.error("Error decoding JWT:", error);
+    console.error('Error decoding JWT:', error);
     return null;
   }
 }
@@ -37,7 +35,7 @@ function isAccessTokenExpiringSoon(accessToken: string): boolean {
   return timeUntilExpiry < fiveMinutes;
 }
 
-declare module "next-auth" {
+declare module 'next-auth' {
   interface Session {
     user: {
       id: string;
@@ -56,7 +54,7 @@ declare module "next-auth" {
   }
 }
 
-declare module "next-auth/jwt" {
+declare module 'next-auth/jwt' {
   interface JWT {
     id?: string;
     email?: string;
@@ -77,17 +75,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     // Proveedor de credenciales (usuario/contraseña)
     Credentials({
-      name: "Credentials",
+      name: 'Credentials',
       credentials: {
-        email: { label: "Email", type: "email", placeholder: "tu@email.com" },
-        password: { label: "Password", type: "password" },
+        email: { label: 'Email', type: 'email', placeholder: 'tu@email.com' },
+        password: { label: 'Password', type: 'password' },
       },
       authorize: async (credentials) => {
         try {
           const { email, password } = credentials;
-          const { data } = await api.post("/auth/login", { email, password });
+          const { data } = await api.post('/auth/login', { email, password });
 
-          console.log("Login response:", {
+          console.log('Login response:', {
             hasData: !!data,
             hasUser: !!data?.user,
             hasAccessToken: !!data?.accessToken,
@@ -95,7 +93,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           });
 
           if (!data || !data.user || !data.accessToken) {
-            console.error("Login failed: Missing data", { data });
+            console.error('Login failed: Missing data', { data });
             return null;
           }
 
@@ -110,7 +108,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           ) {
             // Si no hay role a nivel user, tomar el rol de la primera organización
             roleFromUser = user.organizations[0].role;
-            console.log("Role extracted from organizations:", roleFromUser);
+            console.log('Role extracted from organizations:', roleFromUser);
           }
 
           const userWithToken = {
@@ -123,7 +121,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             accessToken: data.accessToken,
           };
 
-          console.log("Authorized user:", {
+          console.log('Authorized user:', {
             id: userWithToken.id,
             email: userWithToken.email,
             role: userWithToken.role,
@@ -133,14 +131,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
           return userWithToken;
         } catch (_error) {
-          console.error("Authorization error:", _error);
+          console.error('Authorization error:', _error);
           return null;
         }
       },
     }),
   ],
   pages: {
-    signIn: "/auth/login",
+    signIn: '/auth/login',
   },
   callbacks: {
     authorized: async ({ auth }) => {
@@ -150,7 +148,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user, trigger, session }) {
       // PRIMERO: Si es un nuevo usuario (login), asignar todos los datos
       if (user) {
-        console.log("JWT Callback - New user login:", {
+        console.log('JWT Callback - New user login:', {
           hasUser: !!user,
           userKeys: Object.keys(user),
         });
@@ -164,7 +162,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.organizations = (user as any).organizations;
         token.accessToken = (user as any).accessToken;
 
-        console.log("JWT Callback - Token assigned:", {
+        console.log('JWT Callback - Token assigned:', {
           id: token.id,
           email: token.email,
           role: token.role,
@@ -175,8 +173,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
 
       // SEGUNDO: Si hay update (por refresh), actualizar también
-      if (trigger === "update" && session?.user) {
-        console.log("JWT Callback - Update trigger:", {
+      if (trigger === 'update' && session?.user) {
+        console.log('JWT Callback - Update trigger:', {
           updateFields: Object.keys(session.user),
         });
 
@@ -190,34 +188,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.accessToken = session.user.accessToken || token.accessToken;
       }
 
-      // TERCERO: Verificar y refrescar token si está próximo a vencer
-      if (token.accessToken && typeof token.accessToken === "string") {
-        if (isAccessTokenExpiringSoon(token.accessToken)) {
-          console.log("AccessToken expiring soon, attempting refresh...");
-          try {
-            const newAccessToken = await refreshAccessTokenServer({
-              accessToken: token.accessToken,
-            });
-            if (newAccessToken) {
-              token.accessToken = newAccessToken;
-              console.log("AccessToken refreshed successfully");
-            } else {
-              console.error(
-                "Failed to refresh accessToken - got null response"
-              );
-            }
-          } catch (error) {
-            console.error("Error during token refresh:", error);
-          }
-        }
-      }
-
       return token;
     },
     session(params) {
       const { session, token } = params;
 
-      console.log("Session Callback - Token state:", {
+      console.log('Session Callback - Token state:', {
         tokenId: token.id,
         tokenRole: token.role,
         tokenEmail: token.email,
@@ -236,7 +212,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.organizations = token.organizations as any;
         session.user.accessToken = token.accessToken as string;
 
-        console.log("Session Callback - Session user:", {
+        console.log('Session Callback - Session user:', {
           id: session.user.id,
           role: session.user.role,
           email: session.user.email,
@@ -248,8 +224,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   session: {
-    strategy: "jwt",
+    strategy: 'jwt',
     maxAge: 60 * 60 * 24, // 1 día
+     updateAge: 60 * 60 * 20, // 20 horas 
   },
   trustHost: true, // Importante para producción (Vercel, etc.)
 });

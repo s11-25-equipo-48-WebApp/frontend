@@ -1,20 +1,13 @@
-import api from "@/services/config";
-import { useSession } from "next-auth/react";
+import api from '@/services/config';
+import { useSession } from 'next-auth/react';
 
 export default function useRefreshAccessTokenClient() {
   const { data: session, update } = useSession();
 
   const refresh = async (): Promise<string | null> => {
     try {
-      const token = session?.user?.accessToken as string | undefined;
       const { data } = await api.post(
-        "/auth/refresh",
-        {},
-        {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : undefined,
-          },
-        }
+        '/auth/refresh'
       );
 
       const newToken = data?.accessToken;
@@ -29,7 +22,7 @@ export default function useRefreshAccessTokenClient() {
         return newToken;
       }
       return null;
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   };
