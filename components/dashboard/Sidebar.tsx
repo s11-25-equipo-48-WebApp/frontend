@@ -65,7 +65,7 @@ export default function Sidebar() {
       activeBg: 'bg-blue-100',
     },
     {
-      href: '/dashboard/permissions',
+      href: '/dashboard/editors',
       icon: Users,
       label: 'Gestionar editores/permisos',
       iconColor: 'text-yellow-500',

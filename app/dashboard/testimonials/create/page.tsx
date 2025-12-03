@@ -358,7 +358,7 @@ export default function CreateTestimonyPage() {
                                 isLoading={createTestimonyMutation.isPending}
                             // className="sm:flex-1"
                             >
-                                Crear Testimonio
+                                {session?.user?.role === 'admin' ? 'Publicar Testimonio' : 'Enviar para Revisión'}
                             </Button>
 
                             <Button
