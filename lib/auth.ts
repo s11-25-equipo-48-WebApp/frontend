@@ -2,38 +2,7 @@
 import api from '@/services/config';
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-
-// Función para decodificar el JWT del backend y obtener el tiempo de expiración
-function decodeJWT(token: string): { exp: number } | null {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
-    return JSON.parse(jsonPayload);
-  } catch (error) {
-    console.error('Error decoding JWT:', error);
-    return null;
-  }
-}
-
-// Función para verificar si el accessToken del backend está por vencer (menos de 5 minutos)
-function isAccessTokenExpiringSoon(accessToken: string): boolean {
-  const decoded = decodeJWT(accessToken);
-  if (!decoded || !decoded.exp) {
-    return true; // Si no se puede decodificar, asumir que está vencido
-  }
-
-  const currentTime = Math.floor(Date.now() / 1000); // Tiempo actual en segundos
-  const timeUntilExpiry = decoded.exp - currentTime;
-  const fiveMinutes = 5 * 60; // 5 minutos en segundos
-
-  return timeUntilExpiry < fiveMinutes;
-}
+import 'next-auth/jwt';
 
 declare module 'next-auth' {
   interface Session {
