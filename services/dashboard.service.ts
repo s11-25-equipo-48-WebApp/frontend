@@ -80,3 +80,36 @@ export const mockTestimonials: Testimonial[] = [
     content: 'Video / positivo',
   },
 ];
+
+// Categories
+export interface Category {
+  id: string;
+  name: string;
+  usage_count: number;
+  created_at: string;
+}
+
+export const categoryService = {
+  getCategories: async (organizationId: string, accessToken?: string): Promise<Category[]> => {
+    const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
+    const response = await api.get(`/organizations/${organizationId}/categories`, { headers });
+    return response.data;
+  },
+
+  createCategory: async (organizationId: string, name: string, accessToken?: string): Promise<Category> => {
+    const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
+    const response = await api.post(`/organizations/${organizationId}/categories`, { name }, { headers });
+    return response.data;
+  },
+
+  updateCategory: async (organizationId: string, id: string, name: string, accessToken?: string): Promise<Category> => {
+    const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
+    const response = await api.patch(`/organizations/${organizationId}/categories/${id}`, { name }, { headers });
+    return response.data;
+  },
+
+  deleteCategory: async (organizationId: string, id: string, accessToken?: string): Promise<void> => {
+    const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
+    await api.delete(`/organizations/${organizationId}/categories/${id}`, { headers });
+  },
+};

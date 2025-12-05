@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -14,9 +14,11 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       try {
         // interceptor.js
-        const { data } = await api.post('/auth/refresh');
-        originalRequest.headers['Authorization'] = `Bearer ${data.accessToken}`;
-        window.dispatchEvent(new CustomEvent('tokenRefreshed', { detail: data.accessToken }));
+        const { data } = await api.post("/auth/refresh");
+        originalRequest.headers["Authorization"] = `Bearer ${data.accessToken}`;
+        window.dispatchEvent(
+          new CustomEvent("tokenRefreshed", { detail: data.accessToken })
+        );
         return api(originalRequest);
       } catch (refreshError) {
         return Promise.reject(refreshError);
