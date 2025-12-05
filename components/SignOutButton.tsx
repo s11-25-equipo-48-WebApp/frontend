@@ -9,7 +9,6 @@ export default function SignOutButton() {
   const handleSignOut = async () => {
     try {
       await signOut({ redirect: false });
-      toast.success('Sesión cerrada correctamente');
       router.push('/');
       router.refresh();
     } catch (_error) {
