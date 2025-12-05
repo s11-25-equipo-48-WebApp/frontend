@@ -21,7 +21,7 @@ interface Organization {
 
 export default function Home() {
   const { setCurrentOrganization } = useStore();
-  const { data: session, update } = useSession();
+  const { data: session } = useSession();
   const refreshAccessToken = useRefreshAccessTokenClient();
 
   const [organizations, setOrganizations] = useState<Organization[]>([]);
