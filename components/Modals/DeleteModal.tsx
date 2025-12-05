@@ -1,67 +1,52 @@
 import React, { useState } from 'react';
 import { X, Trash2 } from 'lucide-react';
-import { useSession } from 'next-auth/react';
-import useRefreshAccessTokenClient from '@/hooks/useRefreshToken.client';
-import api from '@/services/config';
 
 interface DeleteModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
-  organization?: { id: number; name?: string; } | null;
+  onConfirm: () => Promise<void> | void;
+  title?: string;
+  message?: string;
+  itemName?: string;
+  confirmButtonText?: string;
+  cancelButtonText?: string;
+  // 1. Agregamos la propiedad opcional aquí
+  isLoading?: boolean;
 }
 
 const DeleteModal: React.FC<DeleteModalProps> = ({
   isOpen,
   onClose,
-  onSuccess,
-  organization = null,
+  onConfirm,
+  title = 'Eliminar',
+  message = '¿Seguro que quieres eliminar esto?',
+  itemName,
+  confirmButtonText = 'Eliminar',
+  cancelButtonText = 'Cancelar',
+  // 2. La recibimos aquí (por defecto false)
+  isLoading: externalLoading = false, 
 }) => {
-  const [loading, setLoading] = useState(false);
+  const [internalLoading, setInternalLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { data: session } = useSession();
-  const refreshAccessToken = useRefreshAccessTokenClient();
+
+  // 3. Creamos una variable que sea true si CUALQUIERA de los dos está cargando
+  const isBusy = externalLoading || internalLoading;
 
   if (!isOpen) return null;
 
   const handleConfirm = async () => {
-    if (!organization) return;
-    setLoading(true);
+    setInternalLoading(true);
     setError(null);
 
-    const doRequest = async (token?: string | null) => {
-      return api.delete(`/organization/${organization.id}`, {
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
-    };
-
     try {
-      const token = session?.user?.accessToken as string | undefined;
-      await doRequest(token);
-      await refreshAccessToken();
-      onSuccess();
+      await onConfirm();
+      // Nota: Si el padre maneja el cierre, el onClose aquí podría ser redundante, 
+      // pero lo dejamos por seguridad.
       onClose();
     } catch (err: any) {
-      const status = err?.response?.status;
-      if (status === 401 || status === 403) {
-        try {
-          const newToken = await refreshAccessToken();
-          if (newToken) {
-            await doRequest(newToken);
-            onSuccess();
-            onClose();
-            return;
-          }
-        } catch (refreshErr) {
-          // fallthrough to set error
-        }
-      }
-
       setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
-      setLoading(false);
+      setInternalLoading(false);
     }
   };
 
@@ -69,7 +54,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={isBusy ? undefined : onClose} // Evitar cerrar si está cargando
       />
 
       <div className="relative bg-[#DBD1D5] rounded-3xl shadow-2xl w-full max-w-xl border-5 border-red-500">
@@ -84,7 +69,8 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-2 cursor-pointer hover:bg-foreground/5 rounded-full transition-colors"
+            disabled={isBusy}
+            className="p-2 cursor-pointer hover:bg-foreground/5 rounded-full transition-colors disabled:opacity-50"
           >
             <X size={24} className="text-foreground/60" />
           </button>
@@ -96,33 +82,40 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
               {error}
             </div>
           )}
+          
           <div>
             <h2 className="text-2xl font-bold text-foreground flex justify-center flex-1 p-4">
-              Eliminar Organización
+              {title}
             </h2>
           </div>
 
           <div className="mb-6 text-center text-foreground font-semibold">
-            <p>¿Seguro que quieres eliminar esto?</p>
+            <p>{message}</p>
+            {itemName && (
+              <p className="my-2 text-lg font-bold text-red-600">
+                {itemName}
+              </p>
+            )}
             <p className="my-2 mb-8">Esta acción no se puede deshacer.</p>
           </div>
 
           <div className="flex justify-center gap-8">
             <button
               type="button"
-              className="px-12 py-2 cursor-pointer bg-transparent shadow-md shadow-black/40  text-red-600 border-red-600 border-2 rounded-full hover:text-white hover:bg-red-700 transition-colors font-medium disabled:opacity-50"
+              className="px-12 py-2 cursor-pointer bg-transparent shadow-md shadow-black/40 text-red-600 border-red-600 border-2 rounded-full hover:text-white hover:bg-red-700 transition-colors font-medium disabled:opacity-50"
               onClick={handleConfirm}
-              disabled={loading}
+              // 4. Usamos la variable combinada
+              disabled={isBusy}
             >
-              {loading ? 'Eliminando...' : 'Eliminar'}
+              {isBusy ? 'Eliminando...' : confirmButtonText}
             </button>
             <button
               type="button"
               className="px-12 py-2 cursor-pointer bg-transparent shadow-md shadow-black/40 border-white text-winered border-2 rounded-full hover:bg-foreground/5 transition-colors font-medium disabled:opacity-50"
               onClick={onClose}
-              disabled={loading}
+              disabled={isBusy}
             >
-              Cancelar
+              {cancelButtonText}
             </button>
           </div>
         </div>

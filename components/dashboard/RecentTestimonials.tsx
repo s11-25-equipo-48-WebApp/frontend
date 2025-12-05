@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import api from "@/services/config";
 import Link from "next/link";
 import Button from "../Button";
-import { mockTestimonials, type Testimonial } from "@/data/mockTestimonials";
+import { mockTestimonials, type Testimonial } from "@/data/mocks/mockTestimonials";
 
 export default function RecentTestimonials() {
   const { data: testimonials, isLoading } = useQuery<Testimonial[]>({
