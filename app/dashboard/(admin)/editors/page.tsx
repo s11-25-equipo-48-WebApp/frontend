@@ -254,6 +254,7 @@ export default function Page() {
                       type="checkbox"
                       checked={isSel}
                       disabled={editor.id === currentUserId}
+                      className="w-5 h-5"
                       onChange={(e) =>
                         setSelected((s) => ({
                           ...s,

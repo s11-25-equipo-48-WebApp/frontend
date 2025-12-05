@@ -9,12 +9,14 @@ interface CategoryCardProps {
   // allow any promise return (e.g. createCategory returns the created object)
   onConfirm?: (name: string) => void | Promise<unknown>;
   initialName?: string;
+  onError?: (message: string) => void;
 }
 
 export default function CategoryCard({
   onClose,
   onConfirm,
   initialName = "",
+  onError,
 }: CategoryCardProps) {
   const [name, setName] = useState(initialName);
   const [isLoading, setIsLoading] = useState(false);
@@ -24,6 +26,10 @@ export default function CategoryCard({
   }, [initialName]);
 
   const handleConfirm = async () => {
+    if (name.trim().length > 40) {
+      onError?.("El nombre de la categoría no puede exceder 40 caracteres");
+      return;
+    }
     setIsLoading(true);
     try {
       if (name.trim() !== "") {

@@ -179,85 +179,121 @@ export default function Page() {
         )}
       </button>
 
-      <div className="grid grid-cols-12 items-center gap-4 text-sm font-semibold text-foreground/80 px-2">
-        <div className="col-span-1"></div>
-        <div className="col-span-5">Nombre</div>
-        <div className="col-span-3">Usos</div>
-        <div className="col-span-2 text-right">Creado</div>
-        <div className="col-span-1 text-right"></div>
-      </div>
+      {/* Estado vacío cuando no hay categorías */}
+      {!isLoading && categories.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 px-4">
+          <div className="w-24 h-24 rounded-full bg-[#BCDBB8]/20 flex items-center justify-center mb-6">
+            <Tag size={48} className="text-[#BCDBB8]" />
+          </div>
+          <h3 className="text-xl font-semibold text-foreground mb-2">
+            No tienes ninguna categoría
+          </h3>
+          <p className="text-foreground/60 mb-6">
+            ¡Crea una para empezar a organizar tu contenido!
+          </p>
+          <Button
+            variant="action"
+            color="green"
+            size="fit"
+            onClick={() => setShowAdd(true)}
+            className="px-8 py-3"
+          >
+            Crear mi primera categoría
+          </Button>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-12 items-center gap-4 text-sm font-semibold text-foreground/80 px-2">
+            <div className="col-span-1"></div>
+            <div className="col-span-5">Nombre</div>
+            <div className="col-span-3">Usos</div>
+            <div className="col-span-2 text-right">Creado</div>
+            <div className="col-span-1 text-right"></div>
+          </div>
 
-      <div className="overflow-x-auto">
-        <div className="min-w-[720px] space-y-4">
-          {isLoading ? (
-            <div className="flex items-center justify-center p-8">
-              <RiLoader5Line className="animate-spin w-6 h-6 mr-2 text-foreground/70" />
-              <span className="text-foreground/70">Cargando categorías...</span>
-            </div>
-          ) : (
-            filtered.map((cat) => {
-              const isSel = !!selected[cat.id];
-              return (
-                <div
-                  key={cat.id}
-                  className={`min-w-[720px] grid grid-cols-12 items-center gap-4 rounded-xl p-4 shadow-sm transition-colors ${
-                    isSel ? "bg-[#FAC5C3]" : "bg-white dark:bg-slate-900"
-                  }`}
-                >
-                  <div className="col-span-1 flex items-center justify-center">
-                    <input
-                      type="checkbox"
-                      checked={isSel}
-                      onChange={(e) =>
-                        setSelected((s) => ({
-                          ...s,
-                          [cat.id]: e.target.checked,
-                        }))
-                      }
-                    />
-                  </div>
-
-                  <div className="col-span-5 flex items-center gap-4">
+          <div className="overflow-x-auto">
+            <div className="min-w-[720px] space-y-4">
+              {isLoading ? (
+                <div className="flex items-center justify-center p-8">
+                  <RiLoader5Line className="animate-spin w-6 h-6 mr-2 text-foreground/70" />
+                  <span className="text-foreground/70">
+                    Cargando categorías...
+                  </span>
+                </div>
+              ) : (
+                filtered.map((cat) => {
+                  const isSel = !!selected[cat.id];
+                  return (
                     <div
-                      className={`w-11 h-11 rounded-lg bg-[#BCDBB8] flex items-center justify-center text-white${
-                        isSel ? " ring-2 ring-emerald-500 bg-transparent" : ""
+                      key={cat.id}
+                      className={`min-w-[720px] grid grid-cols-12 items-center gap-4 rounded-xl p-4 shadow-sm transition-colors ${
+                        isSel ? "bg-[#FAC5C3]" : "bg-white dark:bg-slate-900"
                       }`}
                     >
-                      <Tag size={28} />
-                    </div>
-                    <div>
-                      <div className="font-medium text-foreground">
-                        {cat.name}
+                      <div className="col-span-1 flex items-center justify-center">
+                        <input
+                          type="checkbox"
+                          checked={isSel}
+                          onChange={(e) =>
+                            setSelected((s) => ({
+                              ...s,
+                              [cat.id]: e.target.checked,
+                            }))
+                          }
+                          className="w-5 h-5"
+                        />
                       </div>
-                      <div className="text-sm text-foreground/70">
-                        ID: {cat.id}
+
+                      <div className="col-span-5 flex items-center gap-4">
+                        <div
+                          className={`w-11 h-11 rounded-lg bg-[#BCDBB8] flex items-center justify-center text-white${
+                            isSel
+                              ? " ring-2 ring-emerald-500 bg-transparent"
+                              : ""
+                          }`}
+                        >
+                          <Tag size={28} />
+                        </div>
+                        <div>
+                          <div
+                            className="font-medium text-foreground"
+                            title={cat.name}
+                          >
+                            {cat.name.length > 30
+                              ? `${cat.name.substring(0, 30)}...`
+                              : cat.name}
+                          </div>
+                          <div className="text-sm text-foreground/70">
+                            ID: {cat.id}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="col-span-3 text-foreground/80">
+                        {cat.usage_count}
+                      </div>
+
+                      <div className="col-span-2 text-right text-foreground/80">
+                        {new Date(cat.created_at).toLocaleDateString()}
+                      </div>
+
+                      <div className="col-span-1 flex items-center justify-end">
+                        <button
+                          onClick={() => setEditTarget(cat)}
+                          aria-label={`Editar ${cat.name}`}
+                          className="p-2 rounded-full hover:bg-foreground/5 transition-colors cursor-pointer"
+                        >
+                          <SquarePen size={24} />
+                        </button>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="col-span-3 text-foreground/80">
-                    {cat.usage_count}
-                  </div>
-
-                  <div className="col-span-2 text-right text-foreground/80">
-                    {new Date(cat.created_at).toLocaleDateString()}
-                  </div>
-
-                  <div className="col-span-1 flex items-center justify-end">
-                    <button
-                      onClick={() => setEditTarget(cat)}
-                      aria-label={`Editar ${cat.name}`}
-                      className="p-2 rounded-full hover:bg-foreground/5 transition-colors cursor-pointer"
-                    >
-                      <SquarePen size={2} />
-                    </button>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Add Modal */}
       {showAdd && (
@@ -270,6 +306,7 @@ export default function Page() {
             <CategoryCard
               onClose={() => setShowAdd(false)}
               onConfirm={handleCreate}
+              onError={(msg) => toast.error(msg)}
             />
           </div>
         </div>
@@ -287,6 +324,7 @@ export default function Page() {
               initialName={editTarget.name}
               onClose={() => setEditTarget(null)}
               onConfirm={handleUpdate}
+              onError={(msg) => toast.error(msg)}
             />
           </div>
         </div>
