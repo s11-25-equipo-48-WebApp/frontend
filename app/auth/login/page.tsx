@@ -51,7 +51,7 @@ export default function SignInPage() {
 
             <div className='space-y-4'>
               <Button type="submit" variant='wine' disabled={methods.formState.isSubmitting} isLoading={methods.formState.isSubmitting} name='login' size='full'>
-                iniciar sesión
+                Iniciar sesión
               </Button>
               <p className='text-center'>
                 ¿No tienes una cuenta?
