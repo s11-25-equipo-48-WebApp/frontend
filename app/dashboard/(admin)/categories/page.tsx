@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { useStore } from "@/store/zustand";
 import { toast } from "react-toastify";
 import CategoryCard from "@/components/Modals/AddCategoryCard";
+import DeleteModal from "@/components/Modals/DeleteModal";
 import { categoryService, Category } from "@/services/dashboard.service";
 import useRefreshAccessTokenClient from "@/hooks/useRefreshToken.client";
 import { Tag, SquarePen } from "lucide-react";
@@ -186,71 +187,76 @@ export default function Page() {
         <div className="col-span-1 text-right"></div>
       </div>
 
-      <div className="space-y-4">
-        {isLoading ? (
-          <div className="flex items-center justify-center p-8">
-            <RiLoader5Line className="animate-spin w-6 h-6 mr-2 text-foreground/70" />
-            <span className="text-foreground/70">Cargando categorías...</span>
-          </div>
-        ) : (
-          filtered.map((cat) => {
-            const isSel = !!selected[cat.id];
-            return (
-              <div
-                key={cat.id}
-                className={`grid grid-cols-12 items-center gap-4 rounded-xl p-4 shadow-sm transition-colors ${
-                  isSel ? "bg-[#FAC5C3]" : "bg-white dark:bg-slate-900"
-                }`}
-              >
-                <div className="col-span-1 flex items-center justify-center">
-                  <input
-                    type="checkbox"
-                    checked={isSel}
-                    onChange={(e) =>
-                      setSelected((s) => ({ ...s, [cat.id]: e.target.checked }))
-                    }
-                  />
-                </div>
-
-                <div className="col-span-5 flex items-center gap-4">
-                  <div
-                    className={`w-11 h-11 rounded-lg bg-[#BCDBB8] flex items-center justify-center text-white${
-                      isSel ? " ring-2 ring-emerald-500 bg-transparent" : ""
-                    }`}
-                  >
-                    <Tag size={28} />
+      <div className="overflow-x-auto">
+        <div className="min-w-[720px] space-y-4">
+          {isLoading ? (
+            <div className="flex items-center justify-center p-8">
+              <RiLoader5Line className="animate-spin w-6 h-6 mr-2 text-foreground/70" />
+              <span className="text-foreground/70">Cargando categorías...</span>
+            </div>
+          ) : (
+            filtered.map((cat) => {
+              const isSel = !!selected[cat.id];
+              return (
+                <div
+                  key={cat.id}
+                  className={`min-w-[720px] grid grid-cols-12 items-center gap-4 rounded-xl p-4 shadow-sm transition-colors ${
+                    isSel ? "bg-[#FAC5C3]" : "bg-white dark:bg-slate-900"
+                  }`}
+                >
+                  <div className="col-span-1 flex items-center justify-center">
+                    <input
+                      type="checkbox"
+                      checked={isSel}
+                      onChange={(e) =>
+                        setSelected((s) => ({
+                          ...s,
+                          [cat.id]: e.target.checked,
+                        }))
+                      }
+                    />
                   </div>
-                  <div>
-                    <div className="font-medium text-foreground">
-                      {cat.name}
+
+                  <div className="col-span-5 flex items-center gap-4">
+                    <div
+                      className={`w-11 h-11 rounded-lg bg-[#BCDBB8] flex items-center justify-center text-white${
+                        isSel ? " ring-2 ring-emerald-500 bg-transparent" : ""
+                      }`}
+                    >
+                      <Tag size={28} />
                     </div>
-                    <div className="text-sm text-foreground/70">
-                      ID: {cat.id}
+                    <div>
+                      <div className="font-medium text-foreground">
+                        {cat.name}
+                      </div>
+                      <div className="text-sm text-foreground/70">
+                        ID: {cat.id}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="col-span-3 text-foreground/80">
-                  {cat.usage_count}
-                </div>
+                  <div className="col-span-3 text-foreground/80">
+                    {cat.usage_count}
+                  </div>
 
-                <div className="col-span-2 text-right text-foreground/80">
-                  {new Date(cat.created_at).toLocaleDateString()}
-                </div>
+                  <div className="col-span-2 text-right text-foreground/80">
+                    {new Date(cat.created_at).toLocaleDateString()}
+                  </div>
 
-                <div className="col-span-1 flex items-center justify-end">
-                  <button
-                    onClick={() => setEditTarget(cat)}
-                    aria-label={`Editar ${cat.name}`}
-                    className="p-2 rounded-full hover:bg-foreground/5 transition-colors cursor-pointer"
-                  >
-                    <SquarePen size={24} />
-                  </button>
+                  <div className="col-span-1 flex items-center justify-end">
+                    <button
+                      onClick={() => setEditTarget(cat)}
+                      aria-label={`Editar ${cat.name}`}
+                      className="p-2 rounded-full hover:bg-foreground/5 transition-colors cursor-pointer"
+                    >
+                      <SquarePen size={2} />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            );
-          })
-        )}
+              );
+            })
+          )}
+        </div>
       </div>
 
       {/* Add Modal */}
@@ -288,39 +294,19 @@ export default function Page() {
 
       {/* Delete Confirmation */}
       {showDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setShowDelete(false)}
-          />
-          <div className="relative bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-sm shadow-lg border-2 border-red-300">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Eliminar categoría(s)</h3>
-              <button onClick={() => setShowDelete(false)}>×</button>
-            </div>
-            <p className="mt-4 text-foreground/70">
-              ¿Seguro que quieres eliminar {selectedIds.length} categoría(s)?
-              Esta acción no se puede deshacer.
-            </p>
-            <div className="flex gap-3 justify-end mt-6">
-              <Button
-                variant="ghost"
-                onClick={() => setShowDelete(false)}
-                disabled={isDeleting}
-              >
-                Cancelar
-              </Button>
-              <Button
-                variant="primary"
-                color="red"
-                isLoading={isDeleting}
-                onClick={() => handleDelete(selectedIds)}
-              >
-                Eliminar
-              </Button>
-            </div>
-          </div>
-        </div>
+        <DeleteModal
+          isOpen={showDelete}
+          onClose={() => setShowDelete(false)}
+          onConfirm={async () => {
+            if (selectedIds.length > 0) await handleDelete(selectedIds);
+            else setShowDelete(false);
+          }}
+          isLoading={isDeleting}
+          title={`Eliminar ${selectedIds.length} categoría(s)`}
+          message={`¿Seguro que quieres eliminar ${selectedIds.length} categoría(s)?`}
+          confirmButtonText="Eliminar"
+          cancelButtonText="Cancelar"
+        />
       )}
     </div>
   );

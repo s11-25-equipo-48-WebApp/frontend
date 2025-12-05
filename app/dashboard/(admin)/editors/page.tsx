@@ -12,6 +12,7 @@ import { useStore } from "@/store/zustand";
 import api from "@/services/config";
 import { toast } from "react-toastify";
 import AddUserCard from "@/components/Modals/AddUserCard";
+import DeleteModal from "@/components/Modals/DeleteModal";
 import useRefreshAccessTokenClient from "@/hooks/useRefreshToken.client";
 
 type Editor = {
@@ -168,32 +169,33 @@ export default function Page() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Button
             variant="action"
             color="yellow"
             size="fit"
             onClick={() => setShowInvite(true)}
+            className="px-8 py-3 flex items-center justify-center"
           >
             Invitar nuevo editor
           </Button>
         </div>
 
-        <div className="flex-1 max-w-lg">
+        <div className="flex-1 max-w-lg w-full">
           <div className="relative">
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar por nombre o correo"
-              className="w-full pl-10 py-1 rounded-full border border-foreground/10 shadow-sm"
+              className="w-full pl-10 py-3 rounded-full border border-foreground/10 shadow-sm"
             />
             <RiSearchLine className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/60" />
           </div>
         </div>
 
-        <div>
-          <select className="bg-transparent border rounded-full px-4 py-1 border-foreground/10 shadow-sm">
+        <div className="w-full md:w-auto mt-2 md:mt-0">
+          <select className="bg-transparent border w-full md:w-auto  rounded-full px-8 py-3 border-foreground/10 shadow-sm">
             <option>Filtrar</option>
           </select>
         </div>
@@ -230,63 +232,72 @@ export default function Page() {
       </div>
 
       {/* List */}
-      <div className="space-y-4">
-        {isLoadingMembers ? (
-          <div className="flex items-center justify-center p-8">
-            <RiLoader5Line className="animate-spin w-6 h-6 mr-2 text-foreground/70" />
-            <span className="text-foreground/70">Cargando miembros...</span>
-          </div>
-        ) : (
-          filtered.map((editor) => {
-            const isSel = !!selected[editor.id];
-            return (
-              <div
-                key={editor.id}
-                className={`grid grid-cols-12 items-center gap-4 rounded-xl p-4 shadow-sm transition-colors ${
-                  isSel ? "bg-[#FAC5C3]" : "bg-white dark:bg-slate-900"
-                }`}
-              >
-                <div className="col-span-1 flex items-center justify-center">
-                  <input
-                    type="checkbox"
-                    checked={isSel}
-                    disabled={editor.id === currentUserId}
-                    onChange={(e) =>
-                      setSelected((s) => ({
-                        ...s,
-                        [editor.id]: e.target.checked,
-                      }))
-                    }
-                    title={
-                      editor.id === currentUserId
-                        ? "No puedes seleccionar tu propia cuenta"
-                        : undefined
-                    }
-                  />
-                </div>
-
-                <div className="col-span-4 flex items-center gap-4">
-                  <div className="w-11 h-11 rounded-lg bg-yellow-300 flex items-center justify-center text-white">
-                    <RiUser3Line className="w-6 h-6 text-yellow-800" />
+      <div className=" overflow-x-auto">
+        <div className="space-y-4 min-w-[720px]">
+          {isLoadingMembers ? (
+            <div className="flex items-center justify-center p-8">
+              <RiLoader5Line className="animate-spin w-6 h-6 mr-2 text-foreground/70" />
+              <span className="text-foreground/70">Cargando miembros...</span>
+            </div>
+          ) : (
+            filtered.map((editor) => {
+              const isSel = !!selected[editor.id];
+              return (
+                <div
+                  key={editor.id}
+                  className={`min-w-[720px] grid grid-cols-12 items-center gap-4 rounded-xl p-4 shadow-sm transition-colors ${
+                    isSel ? "bg-[#FAC5C3]" : "bg-white dark:bg-slate-900"
+                  }`}
+                >
+                  <div className="col-span-1 flex items-center justify-center">
+                    <input
+                      type="checkbox"
+                      checked={isSel}
+                      disabled={editor.id === currentUserId}
+                      onChange={(e) =>
+                        setSelected((s) => ({
+                          ...s,
+                          [editor.id]: e.target.checked,
+                        }))
+                      }
+                      title={
+                        editor.id === currentUserId
+                          ? "No puedes seleccionar tu propia cuenta"
+                          : undefined
+                      }
+                    />
                   </div>
-                  <div>
-                    <div className="font-medium text-foreground">
-                      {editor.name}
+
+                  <div className="col-span-4 flex items-center gap-4">
+                    <div
+                      className={`w-10 h-10 rounded-lg ring-1 ring-yellow-500 text-yellow-800 flex items-center justify-center shrink-0 ${
+                        isSel ? "bg-transparent text-white" : ""
+                      }`}
+                    >
+                      <RiUser3Line
+                        className={isSel ? "text-white" : ""}
+                        size={24}
+                      />
+                    </div>
+                    <div>
+                      <div className="font-medium text-foreground">
+                        {editor.name}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="col-span-5 text-foreground/80 truncate">
-                  {editor.email}
-                </div>
+                  <div className="col-span-5 text-foreground/80 truncate">
+                    {editor.email}
+                  </div>
 
-                <div className="col-span-2 text-right font-medium">
-                  {editor.testimonioCount}
+                  <div className="col-span-2 text-right font-medium">
+                    {editor.testimonioCount}
+                  </div>
                 </div>
-              </div>
-            );
-          })
-        )}
+              );
+            })
+          )}
+        </div>
       </div>
 
       {/* no pagination: backend no la soporta */}
@@ -304,56 +315,37 @@ export default function Page() {
         </div>
       )}
 
-      {/* Delete Modal (single or bulk) */}
-      {showDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setShowDelete(false)}
-          />
-          <div className="relative bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-sm shadow-lg border-2 border-red-300">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">
-                Eliminar miembro
-                {deleteTarget ? "" : selectedIds.length > 1 ? "s" : ""}
-              </h3>
-              <button onClick={() => setShowDelete(false)}>×</button>
-            </div>
-            <p className="mt-4 text-foreground/70">
-              ¿Seguro que quieres eliminar{" "}
-              {deleteTarget
-                ? "este miembro"
-                : `${selectedIds.length} miembro(s)`}
-              ? Esta acción no se puede deshacer.
-            </p>
-            <div className="flex gap-3 justify-end mt-6">
-              <Button
-                variant="ghost"
-                onClick={() => setShowDelete(false)}
-                disabled={isDeleting}
-              >
-                Cancelar
-              </Button>
-              <Button
-                variant="primary"
-                color="red"
-                isLoading={isDeleting}
-                onClick={() => {
-                  if (deleteTarget) {
-                    handleDelete([deleteTarget.id]);
-                  } else if (selectedIds.length > 0) {
-                    handleDelete(selectedIds);
-                  } else {
-                    setShowDelete(false);
-                  }
-                }}
-              >
-                Eliminar
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Delete Modal (single or bulk) - replaced with shared DeleteModal component */}
+      <DeleteModal
+        isOpen={showDelete}
+        onClose={() => {
+          setShowDelete(false);
+          setDeleteTarget(null);
+        }}
+        onConfirm={async () => {
+          if (deleteTarget) {
+            await handleDelete([deleteTarget.id]);
+          } else if (selectedIds.length > 0) {
+            await handleDelete(selectedIds);
+          } else {
+            setShowDelete(false);
+          }
+        }}
+        isLoading={isDeleting}
+        title={
+          deleteTarget
+            ? "Eliminar miembro"
+            : `Eliminar ${selectedIds.length} miembro(s)`
+        }
+        message={
+          deleteTarget
+            ? `¿Seguro que quieres eliminar a ${deleteTarget.name}?`
+            : `¿Seguro que quieres eliminar ${selectedIds.length} miembro(s)?`
+        }
+        itemName={deleteTarget ? deleteTarget.name : undefined}
+        confirmButtonText="Eliminar"
+        cancelButtonText="Cancelar"
+      />
     </div>
   );
 }

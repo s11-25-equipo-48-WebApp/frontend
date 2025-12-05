@@ -42,8 +42,8 @@ export default function CategoryCard({
   return (
     <ManagementCard
       icon={
-        <div className="w-9 h-9 rounded bg-emerald-500 flex items-center justify-center text-white">
-          <Tag size={16} />
+        <div className="bg-[#BCDBB8] text-white shadow-xl rounded-lg p-3">
+          <Tag size={24} />
         </div>
       }
       title={initialName ? "Editar categoría" : "Agregar categoría"}
@@ -58,7 +58,7 @@ export default function CategoryCard({
         <input
           type="text"
           placeholder="Nombre de la categoría"
-          className="w-full py-3 px-4 border border-gray-300 rounded-md outline-0 focus:border-foreground/50"
+          className="w-full py-3 px-4 bg-white border border-gray-300 rounded-md outline-0 focus:border-foreground/50"
           value={name}
           onChange={(e) => setName(e.target.value)}
           disabled={isLoading}
