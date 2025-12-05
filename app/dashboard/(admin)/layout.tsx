@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/store/zustand";
+import useRefreshAccessTokenClient from "@/hooks/useRefreshToken.client";
 
 export default function AdminLayout({
   children,
@@ -11,10 +12,12 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const { data: session, status } = useSession();
+  const refreshAccessToken = useRefreshAccessTokenClient();
   const router = useRouter();
   const currentOrganization = useStore((s) => s.currentOrganization);
   const setCurrentOrganization = useStore((s) => s.setCurrentOrganization);
   const [checking, setChecking] = useState(true);
+  const [triedRefresh, setTriedRefresh] = useState(false);
 
   useEffect(() => {
     // Esperar a que session esté listo
@@ -43,6 +46,22 @@ export default function AdminLayout({
         setCurrentOrganization(adminOrg.id);
         isAdminForOrg = true;
       }
+    }
+
+    // Si no hay organizaciones en la sesión, intentar refresh una vez antes de bloquear
+    const orgsEmpty = !organizations || organizations.length === 0;
+    if (orgsEmpty && !triedRefresh) {
+      setTriedRefresh(true);
+      (async () => {
+        try {
+          await refreshAccessToken();
+          // La llamada a `refreshAccessToken` intentará actualizar la sesión
+          // Si la sesión se actualiza con organizations, el efecto se volverá a ejecutar
+        } catch (e) {
+          // ignore
+        }
+      })();
+      return;
     }
 
     // Fallback: si el usuario no es admin en la organización seleccionada, bloquear

@@ -1,13 +1,18 @@
-'use client';
-import React, { useEffect, useState } from 'react';
-import Button from '@/components/Button';
-import { RiSearchLine, RiUser3Line, RiDeleteBin6Line, RiLoader5Line } from 'react-icons/ri';
-import { useSession } from 'next-auth/react';
-import { useStore } from '@/store/zustand';
-import api from '@/services/config';
-import { toast } from 'react-toastify';
-import AddUserCard from '@/components/Modals/AddUserCard';
-import useRefreshAccessTokenClient from '@/hooks/useRefreshToken.client';
+"use client";
+import React, { useEffect, useState } from "react";
+import Button from "@/components/Button";
+import {
+  RiSearchLine,
+  RiUser3Line,
+  RiDeleteBin6Line,
+  RiLoader5Line,
+} from "react-icons/ri";
+import { useSession } from "next-auth/react";
+import { useStore } from "@/store/zustand";
+import api from "@/services/config";
+import { toast } from "react-toastify";
+import AddUserCard from "@/components/Modals/AddUserCard";
+import useRefreshAccessTokenClient from "@/hooks/useRefreshToken.client";
 
 type Editor = {
   id: string;
@@ -17,7 +22,7 @@ type Editor = {
 };
 
 export default function Page() {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [editors, setEditors] = useState<Editor[]>([]);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [showInvite, setShowInvite] = useState(false);
@@ -49,12 +54,17 @@ export default function Page() {
     if (!organizationId) return;
     setIsLoadingMembers(true);
     try {
-      const { data } = await api.get(`/organization/${organizationId}/members`, {
-        headers: {
-          Authorization: `Bearer ${session?.user?.accessToken}`,
-        },
-      });
-      refreshToken();
+      const newToken = await refreshToken();
+      const tokenToUse =
+        newToken ?? (session?.user?.accessToken as string | undefined);
+      const { data } = await api.get(
+        `/organization/${organizationId}/members`,
+        {
+          headers: {
+            Authorization: tokenToUse ? `Bearer ${tokenToUse}` : undefined,
+          },
+        }
+      );
       if (Array.isArray(data)) {
         setEditors(data);
       } else if (data && Array.isArray(data.items)) {
@@ -69,8 +79,8 @@ export default function Page() {
       // ensure current user is not selected
       if (currentUserId) setSelected((s) => ({ ...s, [currentUserId]: false }));
     } catch (error) {
-      console.error('Error fetching members:', error);
-      toast.error('Error cargando miembros');
+      console.error("Error fetching members:", error);
+      toast.error("Error cargando miembros");
     } finally {
       setIsLoadingMembers(false);
     }
@@ -83,20 +93,27 @@ export default function Page() {
 
   const handleDelete = async (ids: string[]) => {
     if (!organizationId) {
-      toast.error('Organization ID no disponible');
+      toast.error("Organization ID no disponible");
       return;
     }
 
     // proteger contra borrar al propio usuario
     if (currentUserId && ids.includes(currentUserId)) {
-      toast.error('No puedes eliminar tu propia cuenta');
+      toast.error("No puedes eliminar tu propia cuenta");
       return;
     }
 
     setIsDeleting(true);
     try {
       for (const userId of ids) {
-        await api.delete(`/organization/${organizationId}/members/${userId}`);
+        const newToken = await refreshToken();
+        const tokenToUse =
+          newToken ?? (session?.user?.accessToken as string | undefined);
+        await api.delete(`/organization/${organizationId}/members/${userId}`, {
+          headers: {
+            Authorization: tokenToUse ? `Bearer ${tokenToUse}` : undefined,
+          },
+        });
       }
       toast.success(`${ids.length} miembro(s) eliminado(s)`);
       // refrescar
@@ -104,8 +121,8 @@ export default function Page() {
       setSelected({});
       refreshToken();
     } catch (error) {
-      console.error('Error eliminando miembros:', error);
-      toast.error('Error al eliminar miembros');
+      console.error("Error eliminando miembros:", error);
+      toast.error("Error al eliminar miembros");
     } finally {
       setIsDeleting(false);
       setShowDelete(false);
@@ -118,13 +135,24 @@ export default function Page() {
   };
   const handleInviteEditors = async (emails: string[]) => {
     if (!organizationId) {
-      toast.error('Organization ID no disponible');
+      toast.error("Organization ID no disponible");
       return;
     }
 
     try {
+      const newToken = await refreshToken();
+      const tokenToUse =
+        newToken ?? (session?.user?.accessToken as string | undefined);
       for (const email of emails) {
-        await api.post(`/organization/${organizationId}/members`, { email, role: 'editor' });
+        await api.post(
+          `/organization/${organizationId}/members`,
+          { email, role: "editor" },
+          {
+            headers: {
+              Authorization: tokenToUse ? `Bearer ${tokenToUse}` : undefined,
+            },
+          }
+        );
       }
       toast.success(`${emails.length} invitación(es) enviada(s)`);
       setShowInvite(false);
@@ -132,8 +160,8 @@ export default function Page() {
       await fetchMembers();
       refreshToken();
     } catch (error) {
-      console.error('Error invitando editores:', error);
-      toast.error('Error al invitar editores');
+      console.error("Error invitando editores:", error);
+      toast.error("Error al invitar editores");
     }
   };
 
@@ -142,7 +170,12 @@ export default function Page() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="action" color='yellow' size="fit" onClick={() => setShowInvite(true)}>
+          <Button
+            variant="action"
+            color="yellow"
+            size="fit"
+            onClick={() => setShowInvite(true)}
+          >
             Invitar nuevo editor
           </Button>
         </div>
@@ -167,14 +200,26 @@ export default function Page() {
       </div>
       <button
         aria-label="Eliminar seleccionados"
-        name='eliminar miembros seleccionados'
+        name="eliminar miembros seleccionados"
         onClick={() => setShowDelete(true)}
-        className={` bg-pink-100 text-pink-700 rounded-full h-10 flex items-center justify-center shadow-md transition-all ${anySelected ? 'px-3 flex' : 'w-10 hidden'}`}
+        className={` bg-[#FAC5C3] text-white rounded-full h-16 p-4 flex items-center justify-center shadow-md cursor-pointer transition-all ${
+          anySelected ? "px-3 flex" : "w-10 hidden"
+        }`}
         disabled={!anySelected}
-        title={anySelected ? `${selectedIds.length} seleccionad${selectedIds.length > 1 ? 'os' : 'o'}` : 'Selecciona miembros para eliminar'}
+        title={
+          anySelected
+            ? `${selectedIds.length} seleccionad${
+                selectedIds.length > 1 ? "os" : "o"
+              }`
+            : "Selecciona miembros para eliminar"
+        }
       >
-        <RiDeleteBin6Line className="w-5 h-5" />
-        {anySelected && <span className="ml-2 text-sm font-semibold">{selectedIds.length}</span>}
+        <RiDeleteBin6Line size={28} />
+        {anySelected && (
+          <span className="ml-2 text-sm font-semibold">
+            {selectedIds.length}
+          </span>
+        )}
       </button>
       {/* Table header labels (visually) */}
       <div className="grid grid-cols-12 items-center gap-4 text-sm font-semibold text-foreground/80 px-2">
@@ -186,7 +231,6 @@ export default function Page() {
 
       {/* List */}
       <div className="space-y-4">
-
         {isLoadingMembers ? (
           <div className="flex items-center justify-center p-8">
             <RiLoader5Line className="animate-spin w-6 h-6 mr-2 text-foreground/70" />
@@ -198,15 +242,26 @@ export default function Page() {
             return (
               <div
                 key={editor.id}
-                className={`grid grid-cols-12 items-center gap-4 rounded-xl p-4 shadow-sm transition-colors ${isSel ? 'bg-pink-50' : 'bg-white dark:bg-slate-900'}`}
+                className={`grid grid-cols-12 items-center gap-4 rounded-xl p-4 shadow-sm transition-colors ${
+                  isSel ? "bg-[#FAC5C3]" : "bg-white dark:bg-slate-900"
+                }`}
               >
                 <div className="col-span-1 flex items-center justify-center">
                   <input
                     type="checkbox"
                     checked={isSel}
                     disabled={editor.id === currentUserId}
-                    onChange={(e) => setSelected((s) => ({ ...s, [editor.id]: e.target.checked }))}
-                    title={editor.id === currentUserId ? 'No puedes seleccionar tu propia cuenta' : undefined}
+                    onChange={(e) =>
+                      setSelected((s) => ({
+                        ...s,
+                        [editor.id]: e.target.checked,
+                      }))
+                    }
+                    title={
+                      editor.id === currentUserId
+                        ? "No puedes seleccionar tu propia cuenta"
+                        : undefined
+                    }
                   />
                 </div>
 
@@ -215,13 +270,19 @@ export default function Page() {
                     <RiUser3Line className="w-6 h-6 text-yellow-800" />
                   </div>
                   <div>
-                    <div className="font-medium text-foreground">{editor.name}</div>
+                    <div className="font-medium text-foreground">
+                      {editor.name}
+                    </div>
                   </div>
                 </div>
 
-                <div className="col-span-5 text-foreground/80 truncate">{editor.email}</div>
+                <div className="col-span-5 text-foreground/80 truncate">
+                  {editor.email}
+                </div>
 
-                <div className="col-span-2 text-right font-medium">{editor.testimonioCount}</div>
+                <div className="col-span-2 text-right font-medium">
+                  {editor.testimonioCount}
+                </div>
               </div>
             );
           })
@@ -235,7 +296,10 @@ export default function Page() {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={handleClose} />
           <div className="relative">
-            <AddUserCard onClose={handleClose} onConfirm={handleInviteEditors} />
+            <AddUserCard
+              onClose={handleClose}
+              onConfirm={handleInviteEditors}
+            />
           </div>
         </div>
       )}
@@ -243,24 +307,49 @@ export default function Page() {
       {/* Delete Modal (single or bulk) */}
       {showDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setShowDelete(false)} />
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setShowDelete(false)}
+          />
           <div className="relative bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-sm shadow-lg border-2 border-red-300">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Eliminar miembro{deleteTarget ? '' : selectedIds.length > 1 ? 's' : ''}</h3>
+              <h3 className="text-lg font-semibold">
+                Eliminar miembro
+                {deleteTarget ? "" : selectedIds.length > 1 ? "s" : ""}
+              </h3>
               <button onClick={() => setShowDelete(false)}>×</button>
             </div>
-            <p className="mt-4 text-foreground/70">¿Seguro que quieres eliminar {deleteTarget ? 'este miembro' : `${selectedIds.length} miembro(s)`}? Esta acción no se puede deshacer.</p>
+            <p className="mt-4 text-foreground/70">
+              ¿Seguro que quieres eliminar{" "}
+              {deleteTarget
+                ? "este miembro"
+                : `${selectedIds.length} miembro(s)`}
+              ? Esta acción no se puede deshacer.
+            </p>
             <div className="flex gap-3 justify-end mt-6">
-              <Button variant="ghost" onClick={() => setShowDelete(false)} disabled={isDeleting}>Cancelar</Button>
-              <Button variant="primary" color="red" isLoading={isDeleting} onClick={() => {
-                if (deleteTarget) {
-                  handleDelete([deleteTarget.id]);
-                } else if (selectedIds.length > 0) {
-                  handleDelete(selectedIds);
-                } else {
-                  setShowDelete(false);
-                }
-              }}>Eliminar</Button>
+              <Button
+                variant="ghost"
+                onClick={() => setShowDelete(false)}
+                disabled={isDeleting}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="primary"
+                color="red"
+                isLoading={isDeleting}
+                onClick={() => {
+                  if (deleteTarget) {
+                    handleDelete([deleteTarget.id]);
+                  } else if (selectedIds.length > 0) {
+                    handleDelete(selectedIds);
+                  } else {
+                    setShowDelete(false);
+                  }
+                }}
+              >
+                Eliminar
+              </Button>
             </div>
           </div>
         </div>
@@ -268,4 +357,3 @@ export default function Page() {
     </div>
   );
 }
-

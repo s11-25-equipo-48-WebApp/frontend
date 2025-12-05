@@ -1,4 +1,4 @@
-import { mockTestimonials } from "@/data/mockTestimonials";
+import { mockTestimonials } from "@/data/mocks/mockTestimonials";
 import Image from "next/image";
 import Button from "@/components/Button";
 

@@ -54,6 +54,7 @@ export default function TestimonialFilters({
           onChange={onFilterChange}
           className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-100"
         >
+          {/*Tengo que tener en cuenta que las categorías pueden cambiar (debo hacer un get de las categorías que hay disponibles por el momento) */}
           <option value="">Filtrar</option>
           <option value="video">Solo videos</option>
           <option value="text">Solo textos</option>

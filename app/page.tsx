@@ -89,11 +89,36 @@ export default function Home() {
     setOrganizationToDelete(null);
   };
 
-  const handleDeleteSuccess = () => {
-    fetchOrganizations();
-    setIsDeleteModalOpen(false);
-    setOrganizationToDelete(null);
+  const handleDeleteConfirm = async () => {
+    if (!organizationToDelete) return;
+
+    const doRequest = async (token?: string | null) => {
+      return api.delete(`/organization/${organizationToDelete.id}`, {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+    };
+
+    try {
+      const token = session?.user?.accessToken as string | undefined;
+      await doRequest(token);
+      await refreshAccessToken();
+      fetchOrganizations();
+    } catch (err: any) {
+      const status = err?.response?.status;
+      if (status === 401 || status === 403) {
+        const newToken = await refreshAccessToken();
+        if (newToken) {
+          await doRequest(newToken);
+          fetchOrganizations();
+          return;
+        }
+      }
+      throw err;
+    }
   };
+
 
   const handleModalClose = () => {
     setIsModalOpen(false);
@@ -248,9 +273,12 @@ export default function Home() {
       <DeleteModal
         isOpen={isDeleteModalOpen}
         onClose={handleDeleteClose}
-        onSuccess={handleDeleteSuccess}
-        organization={organizationToDelete}
+        onConfirm={handleDeleteConfirm}
+        title="Eliminar Organización"
+        message="¿Seguro que quieres eliminar esta organización?"
+        itemName={organizationToDelete?.name}
       />
+
     </main>
   );
 }

@@ -1,10 +1,14 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useForm, FormProvider } from 'react-hook-form';
-import { useTestimonials, useTestimonialSelection } from '@/hooks/useTestimonials';
+import { useState } from 'react';
+import { usePendingTestimonials } from '@/hooks/usePendingTestimonials';
 import { FilterType, SortType } from '@/utils/testimonial.utils';
 import TestimonialFilters from '@/components/dashboard/TestimonialFilters';
 import TestimonialTable from '@/components/dashboard/TestimonialTable';
+import DeleteModal from '@/components/Modals/DeleteModal';
+import { useDeleteTestimonials } from '@/hooks/useDeleteTestimonials';
+import { useTestimonialSelection } from '@/hooks/useTestimonialsSelection';
 
 interface FilterFormData {
   filterBy: FilterType;
@@ -13,37 +17,47 @@ interface FilterFormData {
 
 export default function PendingReviewsPage() {
   const router = useRouter();
-  
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
   const methods = useForm<FilterFormData>({
-    defaultValues: { filterBy: '', sortBy: '' }
+    defaultValues: { filterBy: '', sortBy: '' },
   });
 
   const filterBy = methods.watch('filterBy');
   const sortBy = methods.watch('sortBy');
 
-  const { testimonials, rawTestimonials, isLoading, deleteTestimonials } = 
-    useTestimonials(filterBy, sortBy);
-  
-  const { selectedIds, selectAll, hasSelected, toggleSelectAll, toggleSelect, clearSelection } = 
+  const { testimonials, rawTestimonials, isLoading, hasOrganization } = usePendingTestimonials(
+    filterBy,
+    sortBy
+  );
+  const deleteTestimonials = useDeleteTestimonials();
+  const { selectedIds, selectAll, hasSelected, toggleSelectAll, toggleSelect, clearSelection } =
     useTestimonialSelection(testimonials);
 
-  const handleDelete = () => {
-    if (confirm(`¿Estás seguro de eliminar ${selectedIds.length} testimonio(s)?`)) {
-      deleteTestimonials.mutate(selectedIds, {
-        onSuccess: () => clearSelection()
-      });
+  const handleDeleteClick = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await deleteTestimonials.mutateAsync(selectedIds);
+      clearSelection();
+      setIsDeleteModalOpen(false);
+    } catch (error) {
+      console.error('Error al eliminar testimonios:', error);
     }
   };
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     methods.setValue('filterBy', e.target.value as FilterType);
-    clearSelection();
+    clearSelection(); // Limpiar selección cuando cambian los filtros
   };
 
   const handleViewDetails = (id: string) => {
-    router.push(`/dashboard/revisiones/${id}`);
+    router.push(`/dashboard/(admin)/testimonials/${id}`);
   };
 
+  // Loading state
   if (isLoading) {
     return (
       <div className="flex-1 p-8 flex items-center justify-center">
@@ -55,29 +69,39 @@ export default function PendingReviewsPage() {
     );
   }
 
+  if (!hasOrganization) {
+    return (
+      <div className="flex-1 p-8 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Por favor selecciona una organización</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 p-8">
       <div className="max-w-7xl mx-auto">
         <FormProvider {...methods}>
           <form className="space-y-6">
-            {/* Filters and Actions */}
+            {/* Filtros y acciones */}
             <TestimonialFilters
               methods={methods}
               hasSelected={hasSelected}
               selectedCount={selectedIds.length}
               isDeleting={deleteTestimonials.isPending}
-              onDelete={handleDelete}
+              onDelete={handleDeleteClick}
               onFilterChange={handleFilterChange}
             />
 
-            {/* Resultados */}
+            {/* Contador de resultados filtrados */}
             {filterBy && (
               <div className="text-sm text-gray-600">
                 Mostrando {testimonials.length} de {rawTestimonials.length} testimonios
               </div>
             )}
 
-            {/* Table */}
+            {/* Tabla de testimonios */}
             <TestimonialTable
               testimonials={testimonials}
               selectedIds={selectedIds}
@@ -87,8 +111,32 @@ export default function PendingReviewsPage() {
               onToggleSelect={toggleSelect}
               onViewDetails={handleViewDetails}
             />
+
+            {/* Mensaje si no hay testimonios */}
+            {testimonials.length === 0 && !isLoading && (
+              <div className="text-center py-12">
+                <p className="text-gray-500">
+                  {filterBy
+                    ? 'No se encontraron testimonios con los filtros aplicados'
+                    : ''}
+                </p>
+              </div>
+            )}
           </form>
         </FormProvider>
+
+        {/* Modal de confirmación de eliminación */}
+        <DeleteModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleDeleteConfirm}
+          title={`Eliminar ${selectedIds.length} Testimonio${selectedIds.length > 1 ? 's' : ''}`}
+          message={`¿Estás seguro de que deseas eliminar ${selectedIds.length} testimonio${
+            selectedIds.length > 1 ? 's' : ''
+          }? Esta acción no se puede deshacer.`}
+          confirmButtonText="Eliminar"
+          isLoading={deleteTestimonials.isPending}
+        />
       </div>
     </div>
   );

@@ -1,16 +1,21 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Tag } from 'lucide-react';
-import ManagementCard from '@/components/dashboard/ManagementCard';
+import { useState, useEffect } from "react";
+import { Tag } from "lucide-react";
+import ManagementCard from "@/components/dashboard/ManagementCard";
 
 interface CategoryCardProps {
   onClose?: () => void;
-  onConfirm?: (name: string) => void | Promise<void>;
+  // allow any promise return (e.g. createCategory returns the created object)
+  onConfirm?: (name: string) => void | Promise<unknown>;
   initialName?: string;
 }
 
-export default function CategoryCard({ onClose, onConfirm, initialName = '' }: CategoryCardProps) {
+export default function CategoryCard({
+  onClose,
+  onConfirm,
+  initialName = "",
+}: CategoryCardProps) {
   const [name, setName] = useState(initialName);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -21,7 +26,7 @@ export default function CategoryCard({ onClose, onConfirm, initialName = '' }: C
   const handleConfirm = async () => {
     setIsLoading(true);
     try {
-      if (name.trim() !== '') {
+      if (name.trim() !== "") {
         await onConfirm?.(name.trim());
       }
     } finally {
@@ -30,22 +35,22 @@ export default function CategoryCard({ onClose, onConfirm, initialName = '' }: C
   };
 
   const handleReset = () => {
-    setName('');
+    setName("");
     onClose?.();
   };
 
   return (
     <ManagementCard
-      icon={(
+      icon={
         <div className="w-9 h-9 rounded bg-emerald-500 flex items-center justify-center text-white">
           <Tag size={16} />
         </div>
-      )}
-      title={initialName ? 'Editar categoría' : 'Agregar categoría'}
+      }
+      title={initialName ? "Editar categoría" : "Agregar categoría"}
       description="Organiza tu contenido con categorías visibles para los administradores."
       onConfirm={handleConfirm}
       onReset={handleReset}
-      confirmLabel={initialName ? 'Guardar' : 'Crear'}
+      confirmLabel={initialName ? "Guardar" : "Crear"}
       resetLabel="Cancelar"
       isLoading={isLoading}
     >

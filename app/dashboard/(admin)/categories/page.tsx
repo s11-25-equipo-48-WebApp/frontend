@@ -6,9 +6,10 @@ import { RiSearchLine, RiDeleteBin6Line, RiLoader5Line } from "react-icons/ri";
 import { useSession } from "next-auth/react";
 import { useStore } from "@/store/zustand";
 import { toast } from "react-toastify";
-import CategoryCard from "@/components/Modals/CategoryCard";
+import CategoryCard from "@/components/Modals/AddCategoryCard";
 import { categoryService, Category } from "@/services/dashboard.service";
 import useRefreshAccessTokenClient from "@/hooks/useRefreshToken.client";
+import { Tag, SquarePen } from "lucide-react";
 
 export default function Page() {
   const [query, setQuery] = useState("");
@@ -30,9 +31,11 @@ export default function Page() {
     if (!organizationId) return;
     setIsLoading(true);
     try {
+      const newToken = await refreshToken();
+      const tokenToUse = newToken ?? accessToken;
       const data = await categoryService.getCategories(
         organizationId,
-        accessToken
+        tokenToUse
       );
       setCategories(Array.isArray(data) ? data : []);
       refreshToken();
@@ -60,7 +63,9 @@ export default function Page() {
   const handleCreate = async (name: string) => {
     if (!organizationId) return toast.error("Organization ID no disponible");
     try {
-      await categoryService.createCategory(organizationId, name, accessToken);
+      const newToken = await refreshToken();
+      const tokenToUse = newToken ?? accessToken;
+      await categoryService.createCategory(organizationId, name, tokenToUse);
       toast.success("Categoría creada");
       setShowAdd(false);
       await fetchCategories();
@@ -74,11 +79,13 @@ export default function Page() {
   const handleUpdate = async (name: string) => {
     if (!organizationId || !editTarget) return;
     try {
+      const newToken = await refreshToken();
+      const tokenToUse = newToken ?? accessToken;
       await categoryService.updateCategory(
         organizationId,
         editTarget.id,
         name,
-        accessToken
+        tokenToUse
       );
       toast.success("Categoría actualizada");
       setEditTarget(null);
@@ -94,8 +101,10 @@ export default function Page() {
     if (!organizationId) return toast.error("Organization ID no disponible");
     setIsDeleting(true);
     try {
+      const newToken = await refreshToken();
+      const tokenToUse = newToken ?? accessToken;
       for (const id of ids) {
-        await categoryService.deleteCategory(organizationId, id, accessToken);
+        await categoryService.deleteCategory(organizationId, id, tokenToUse);
       }
       toast.success("Categoría(s) eliminada(s)");
       setSelected({});
@@ -113,32 +122,34 @@ export default function Page() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4 w-full md:w-auto">
           <Button
             variant="action"
             color="green"
             size="fit"
             onClick={() => setShowAdd(true)}
+            aria-label="Crear nueva categoría"
+            className="px-8 py-3 flex items-center justify-center"
           >
-            Agregar categoría
+            Crear nueva categoría
           </Button>
         </div>
 
-        <div className="flex-1 max-w-lg">
+        <div className="flex-1 max-w-lg w-full">
           <div className="relative">
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar categoría"
-              className="w-full pl-10 py-1 rounded-full border border-foreground/10 shadow-sm"
+              className="w-full pl-10 py-3 rounded-full border border-foreground/10 shadow-sm"
             />
             <RiSearchLine className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/60" />
           </div>
         </div>
 
-        <div>
-          <select className="bg-transparent border rounded-full px-4 py-1 border-foreground/10 shadow-sm">
+        <div className="w-full md:w-auto mt-2 md:mt-0">
+          <select className="bg-transparent border rounded-full px-8 py-3 border-foreground/10 shadow-sm w-full md:w-auto">
             <option>Filtrar</option>
           </select>
         </div>
@@ -147,7 +158,7 @@ export default function Page() {
       <button
         aria-label="Eliminar seleccionados"
         onClick={() => setShowDelete(true)}
-        className={` bg-emerald-100 text-emerald-700 rounded-full h-10 flex items-center justify-center shadow-md transition-all ${
+        className={` bg-[#FAC5C3] text-white rounded-full p-4 flex items-center justify-center shadow-md transition-all ${
           anySelected ? "px-3 flex" : "w-10 hidden"
         }`}
         disabled={!anySelected}
@@ -159,7 +170,7 @@ export default function Page() {
             : "Selecciona categorías para eliminar"
         }
       >
-        <RiDeleteBin6Line className="w-5 h-5" />
+        <RiDeleteBin6Line size={28} />
         {anySelected && (
           <span className="ml-2 text-sm font-semibold">
             {selectedIds.length}
@@ -171,7 +182,8 @@ export default function Page() {
         <div className="col-span-1"></div>
         <div className="col-span-5">Nombre</div>
         <div className="col-span-3">Usos</div>
-        <div className="col-span-3 text-right">Creado</div>
+        <div className="col-span-2 text-right">Creado</div>
+        <div className="col-span-1 text-right"></div>
       </div>
 
       <div className="space-y-4">
@@ -187,7 +199,7 @@ export default function Page() {
               <div
                 key={cat.id}
                 className={`grid grid-cols-12 items-center gap-4 rounded-xl p-4 shadow-sm transition-colors ${
-                  isSel ? "bg-emerald-50" : "bg-white dark:bg-slate-900"
+                  isSel ? "bg-[#FAC5C3]" : "bg-white dark:bg-slate-900"
                 }`}
               >
                 <div className="col-span-1 flex items-center justify-center">
@@ -201,15 +213,12 @@ export default function Page() {
                 </div>
 
                 <div className="col-span-5 flex items-center gap-4">
-                  <div className="w-11 h-11 rounded-lg bg-emerald-300 flex items-center justify-center text-white">
-                    <svg
-                      className="w-5 h-5 text-emerald-800"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path d="M20.59 13.41L11 3.83 9.59 5.24 19.17 14.83 20.59 13.41zM7 7L2 12l5 5 5-5L7 7z" />
-                    </svg>
+                  <div
+                    className={`w-11 h-11 rounded-lg bg-[#BCDBB8] flex items-center justify-center text-white${
+                      isSel ? " ring-2 ring-emerald-500 bg-transparent" : ""
+                    }`}
+                  >
+                    <Tag size={28} />
                   </div>
                   <div>
                     <div className="font-medium text-foreground">
@@ -225,26 +234,18 @@ export default function Page() {
                   {cat.usage_count}
                 </div>
 
-                <div className="col-span-3 text-right text-foreground/80">
+                <div className="col-span-2 text-right text-foreground/80">
                   {new Date(cat.created_at).toLocaleDateString()}
                 </div>
 
-                <div className="col-span-12 text-right mt-3 sm:mt-0 sm:col-span-0">
-                  <div className="flex gap-2 justify-end">
-                    <Button variant="ghost" onClick={() => setEditTarget(cat)}>
-                      Editar
-                    </Button>
-                    <Button
-                      variant="primary"
-                      color="red"
-                      onClick={() => {
-                        setSelected({ [cat.id]: true });
-                        setShowDelete(true);
-                      }}
-                    >
-                      Eliminar
-                    </Button>
-                  </div>
+                <div className="col-span-1 flex items-center justify-end">
+                  <button
+                    onClick={() => setEditTarget(cat)}
+                    aria-label={`Editar ${cat.name}`}
+                    className="p-2 rounded-full hover:bg-foreground/5 transition-colors cursor-pointer"
+                  >
+                    <SquarePen size={24} />
+                  </button>
                 </div>
               </div>
             );
