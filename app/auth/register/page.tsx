@@ -53,7 +53,7 @@ export default function RegisterPage() {
             </div>
 
             <div className='space-y-4'>
-              <Button type="submit" disabled={createAccount.isPending} isLoading={createAccount.isPending} name='register' size='full'>
+              <Button type="submit" variant='wine' disabled={createAccount.isPending} isLoading={createAccount.isPending} name='register' size='full'>
                 Regístrate
               </Button>
               <p className='text-center'>

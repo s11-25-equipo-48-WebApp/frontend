@@ -50,7 +50,7 @@ export default function SignInPage() {
             </div>
 
             <div className='space-y-4'>
-              <Button type="submit" disabled={methods.formState.isSubmitting} isLoading={methods.formState.isSubmitting} name='login' size='full'>
+              <Button type="submit" variant='wine' disabled={methods.formState.isSubmitting} isLoading={methods.formState.isSubmitting} name='login' size='full'>
                 iniciar sesión
               </Button>
               <p className='text-center'>
