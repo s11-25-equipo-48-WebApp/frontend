@@ -103,7 +103,6 @@ export default function LandingPage() {
               <Button
                 variant="wine"
                 size='fit'
-                // color=""
                 onClick={() => router.push('/auth/register')}
                 className="group text-lg px-10 py-4"
               >
