@@ -121,11 +121,10 @@ export default function Topbar({ user }: TopBarProps) {
                 className="w-full rounded-full px-4 py-3 bg-white border border-gray-300  focus:outline-none focus:ring-2 focus:ring-winered focus:border-transparent"
               />
             </div>
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col space-y-4 ">
               <Button
                 onClick={handleChangeName}
                 variant="wine"
-                size="fit"
                 className="px-10"
               >
                 Cambiar
