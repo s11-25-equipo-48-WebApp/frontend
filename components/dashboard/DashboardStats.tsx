@@ -1,55 +1,43 @@
 'use client';
-import { useQuery } from '@tanstack/react-query';
-import api from '@/services/config';
 import { ArrowUpRight } from 'lucide-react';
-
-interface Stats {
-  publishedMonth: number;
-  receivedMonth: number;
-  approvalRate: number;
-  consentRate: number;
-  mediumImpact: number;
-}
+import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
+import Link from 'next/link';
 
 export default function DashboardStats() {
-  const { data: stats, isLoading } = useQuery<Stats>({
-    queryKey: ['dashboard-stats'],
-    queryFn: async () => {
-      const { data } = await api.get('/dashboard/stats');
-      return data;
-    },
-  });
+  const { metrics, isLoading } = useDashboardMetrics();
 
   const cards = [
     {
       title: 'Testimonios publicados (mes)',
-      value: stats?.publishedMonth || 90,
+      value: metrics?.publishedMonth ?? 0,
       color: 'bg-green-500',
-      link: '/dashboard/testimonios/publicados',
+      link: '/dashboard/(admin)/testimonials',
+      showViewAll: true,
     },
     {
       title: 'Testimonios recibidos (mes)',
-      value: stats?.receivedMonth || 128,
+      value: metrics?.receivedMonth ?? 0,
       color: 'bg-blue-500',
-      link: '/dashboard/testimonios/recibidos',
+      link: '/dashboard/(admin)/pending-reviews',
+      showViewAll: true,
     },
     {
       title: 'Tasa de aprobación',
-      value: `${stats?.approvalRate || 89}%`,
+      value: `${metrics?.approvalRate ?? 0}%`,
       color: 'bg-orange-500',
-      link: '/dashboard/analytics/aprobacion',
+      showViewAll: false,
     },
     {
       title: 'Tasa de consentimiento',
-      value: `${stats?.consentRate || 92}%`,
+      value: `${metrics?.consentRate ?? 0}%`,
       color: 'bg-purple-500',
-      link: '/dashboard/analytics/consentimiento',
+      showViewAll: false,
     },
     {
-      title: 'Impacto medio',
-      value: stats?.mediumImpact || 234,
+      title: 'Visualizaciones',
+      value: metrics?.views ?? 0,
       color: 'bg-gray-800',
-      link: '/dashboard/analytics/impacto',
+      showViewAll: false,
     },
   ];
 
@@ -59,7 +47,8 @@ export default function DashboardStats() {
         {[1, 2, 3, 4, 5].map((i) => (
           <div key={i} className="bg-white rounded-xl p-6 shadow-sm animate-pulse">
             <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-            <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-8 bg-gray-200 rounded w-1/2 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/3"></div>
           </div>
         ))}
       </div>
@@ -71,17 +60,29 @@ export default function DashboardStats() {
       {cards.map((card, index) => (
         <div
           key={index}
-          className={`${card.color} rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow cursor-pointer relative overflow-hidden group`}
+          className={`${card.color} rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow relative overflow-hidden ${
+            card.showViewAll ? 'group cursor-pointer' : ''
+          }`}
         >
           <div className="relative z-10">
-            <h3 className="text-sm font-medium mb-2 opacity-90">{card.title}</h3>
+            <h3 className="text-sm font-medium mb-2 opacity-90">
+              {card.title}
+            </h3>
             <p className="text-3xl font-bold mb-4">{card.value}</p>
-            <button className="flex items-center gap-2 text-sm font-medium hover:gap-3 transition-all">
-              View All
-              <ArrowUpRight className="w-4 h-4" />
-            </button>
+            
+            {card.showViewAll && card.link && (
+              <Link 
+                href={card.link}
+                className="flex items-center gap-2 text-sm font-medium hover:gap-3 transition-all"
+              >
+                View All
+                <ArrowUpRight className="w-4 h-4" />
+              </Link>
+            )}
           </div>
-          <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity" />
+          {card.showViewAll && (
+            <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity" />
+          )}
         </div>
       ))}
     </div>

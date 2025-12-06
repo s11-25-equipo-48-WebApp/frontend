@@ -45,9 +45,7 @@ export const testimonialService = {
   ): Promise<Testimonial[]> => {
 
     if (USE_MOCKS) {
-      
       await new Promise(resolve => setTimeout(resolve, 500));
-      
       return mockTestimonialsData.map(transformAPIToTestimonial);
     }
 
@@ -63,6 +61,64 @@ export const testimonialService = {
 
     const apiTestimonials = response.data.data || [];
     return apiTestimonials.map(transformAPIToTestimonial);
+  },
+
+  // ✅ NUEVO: Obtener testimonios públicos/publicados
+  getPublic: async (
+    organizationId: string,
+    accessToken: string,
+    page: number = 1,
+    limit: number = 50,
+    categoryId?: string,
+    tagId?: string
+  ): Promise<Testimonial[]> => {
+
+    if (USE_MOCKS) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      // Filtrar solo los aprobados para simular testimonios públicos
+      return mockTestimonialsData
+        .filter(t => t.status === 'approved')
+        .map(transformAPIToTestimonial);
+    }
+
+    const params: any = { page, limit };
+    if (categoryId) params.category_id = categoryId;
+    if (tagId) params.tag_id = tagId;
+
+    const response = await api.get<PaginatedResponse<TestimonialAPIResponse>>(
+      `/api/v1/organizations/${organizationId}/testimonios/public`,
+      {
+        params,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    const apiTestimonials = response.data.data || [];
+    return apiTestimonials.map(transformAPIToTestimonial);
+  },
+
+  // ✅ NUEVO: Obtener testimonios recientes (últimos publicados)
+  getRecent: async (
+    organizationId: string,
+    accessToken: string,
+    limit: number = 5
+  ): Promise<Testimonial[]> => {
+    // Obtener testimonios públicos y tomar solo los más recientes
+    const allPublic = await testimonialService.getPublic(
+      organizationId,
+      accessToken,
+      1,
+      limit
+    );
+    
+    // Ordenar por fecha más reciente primero
+    return allPublic.sort((a, b) => {
+      const dateA = new Date(a.received.split('/').reverse().join('-'));
+      const dateB = new Date(b.received.split('/').reverse().join('-'));
+      return dateB.getTime() - dateA.getTime();
+    }).slice(0, limit);
   },
 
   getById: async (
@@ -101,7 +157,7 @@ export const testimonialService = {
   deleteOne: async (
     organizationId: string,
     id: string,
-    accessToken: string // ✅ Agregado
+    accessToken: string
   ): Promise<void> => {
     await api.delete(`/organizations/${organizationId}/testimonios/${id}`, {
       headers: {
@@ -113,7 +169,7 @@ export const testimonialService = {
   approve: async (
     organizationId: string,
     id: string,
-    accessToken: string // ✅ Agregado
+    accessToken: string
   ): Promise<Testimonial> => {
     const response = await api.patch<TestimonialAPIResponse>(
       `/organizations/${organizationId}/testimonios/${id}/approve`,
@@ -131,7 +187,7 @@ export const testimonialService = {
   reject: async (
     organizationId: string,
     id: string,
-    accessToken: string // ✅ Agregado
+    accessToken: string
   ): Promise<Testimonial> => {
     const response = await api.patch<TestimonialAPIResponse>(
       `/organizations/${organizationId}/testimonios/${id}/reject`,
