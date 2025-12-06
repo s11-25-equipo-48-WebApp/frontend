@@ -63,7 +63,7 @@ export default function TestimonialTable({
               <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                 {filterBy
                   ? "No se encontraron testimonios con los filtros aplicados"
-                  : "No hay testimonios pendientes de revisión"}
+                  : ""}
               </td>
             </tr>
           ) : (

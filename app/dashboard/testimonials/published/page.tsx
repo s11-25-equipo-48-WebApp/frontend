@@ -2,7 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { useForm, FormProvider } from 'react-hook-form';
 import { useState } from 'react';
-import { usePendingTestimonials } from '@/hooks/usePendingTestimonials';
+import { usePublicTestimonials } from '@/hooks/usePublicTestimonials';
 import { FilterType, SortType } from '@/utils/testimonial.utils';
 import TestimonialFilters from '@/components/dashboard/TestimonialFilters';
 import TestimonialTable from '@/components/dashboard/TestimonialTable';
@@ -15,7 +15,7 @@ interface FilterFormData {
   sortBy: SortType;
 }
 
-export default function PendingReviewsPage() {
+export default function PublicTestimonialsPage() {
   const router = useRouter();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -26,7 +26,7 @@ export default function PendingReviewsPage() {
   const filterBy = methods.watch('filterBy');
   const sortBy = methods.watch('sortBy');
 
-  const { testimonials, rawTestimonials, isLoading, hasOrganization } = usePendingTestimonials(
+  const { testimonials, rawTestimonials, isLoading, hasOrganization } = usePublicTestimonials(
     filterBy,
     sortBy
   );
@@ -50,7 +50,7 @@ export default function PendingReviewsPage() {
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     methods.setValue('filterBy', e.target.value as FilterType);
-    clearSelection(); // Limpiar selección cuando cambian los filtros
+    clearSelection();
   };
 
   const handleViewDetails = (id: string) => {
@@ -82,6 +82,14 @@ export default function PendingReviewsPage() {
   return (
     <div className="flex-1 p-8">
       <div className="max-w-7xl mx-auto">
+        {/* Título */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">Testimonios Publicados</h1>
+          <p className="text-gray-600 mt-1">
+            Gestiona todos los testimonios aprobados y visibles públicamente
+          </p>
+        </div>
+
         <FormProvider {...methods}>
           <form className="space-y-6">
             {/* Filtros y acciones */}
@@ -118,7 +126,7 @@ export default function PendingReviewsPage() {
                 <p className="text-gray-500">
                   {filterBy
                     ? 'No se encontraron testimonios con los filtros aplicados'
-                    : 'No hay testimonios pendientes de revisión'}
+                    : 'No hay testimonios publicados aún'}
                 </p>
               </div>
             )}

@@ -1,54 +1,10 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
-import api from "@/services/config";
 import Link from "next/link";
 import Button from "../Button";
-
-interface PendingTestimonial {
-  id: string;
-  client: string;
-  course: string;
-  receivedDate: string;
-}
+import { usePendingTestimonialsWidget } from "@/hooks/usePendingTestimonialsWidget";
 
 export default function PendingTestimonials() {
-  const { data: pending, isLoading } = useQuery<PendingTestimonial[]>({
-    queryKey: ["pending-testimonials"],
-    queryFn: async () => {
-      const { data } = await api.get("/testimonials/pending");
-      return data;
-    },
-  });
-
-  // Mock data
-  const mockPending: PendingTestimonial[] = [
-    {
-      id: "1",
-      client: "Juan P.",
-      course: "Python Avanzado",
-      receivedDate: "Jun 24, 2025",
-    },
-    {
-      id: "2",
-      client: "Natan B.",
-      course: "Full Stack Pro",
-      receivedDate: "Mar 10, 2025",
-    },
-    {
-      id: "3",
-      client: "Rodrigo G.",
-      course: "Python Principiante",
-      receivedDate: "Nov 10, 2025",
-    },
-    {
-      id: "4",
-      client: "Orlando D.",
-      course: "Automatización con Shell",
-      receivedDate: "Dec 20, 2025",
-    },
-  ];
-
-  const displayPending = pending || mockPending;
+  const { testimonials, count, isLoading } = usePendingTestimonialsWidget(4);
 
   return (
     <div className="bg-white rounded-xl shadow-sm border-2 border-pink-500 p-6">
@@ -57,12 +13,17 @@ export default function PendingTestimonials() {
           <h2 className="text-xl font-bold text-gray-800">
             Testimonios pendientes
           </h2>
-          <span className="px-3 py-1 bg-orange-500 text-white text-sm font-semibold rounded-full">
-            {displayPending.length}
-          </span>
+          {!isLoading && (
+            <span className="px-3 py-1 bg-orange-500 text-white text-sm font-semibold rounded-full">
+              {count}
+            </span>
+          )}
         </div>
         <Button variant="ghost" className="p-0">
-          <Link href="/dashboard/revisiones" className="text-sm font-medium">
+          <Link 
+            href="/dashboard/pending-reviews" 
+            className="text-sm font-medium"
+          >
             Ver todo
           </Link>
         </Button>
@@ -84,7 +45,7 @@ export default function PendingTestimonials() {
           <tbody>
             {isLoading ? (
               <>
-                {[1, 2, 3].map((i) => (
+                {[1, 2, 3, 4].map((i) => (
                   <tr
                     key={i}
                     className="border-b border-gray-100 animate-pulse"
@@ -102,23 +63,33 @@ export default function PendingTestimonials() {
                   </tr>
                 ))}
               </>
+            ) : testimonials.length === 0 ? (
+              <tr>
+                <td colSpan={3} className="py-8 text-center text-gray-500">
+                  No hay testimonios pendientes de revisión
+                </td>
+              </tr>
             ) : (
-              displayPending.map((item) => (
+              testimonials.map((testimonial) => (
                 <tr
-                  key={item.id}
+                  key={testimonial.id}
                   className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                 >
                   <td className="py-4 px-4">
-                    <p className="font-medium text-gray-800">{item.client}</p>
-                    <p className="text-sm text-gray-500">{item.course}</p>
+                    <p className="font-medium text-gray-800">
+                      {testimonial.client}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {testimonial.course}
+                    </p>
                   </td>
                   <td className="py-4 px-4 text-gray-600">
-                    {item.receivedDate}
+                    {testimonial.received}
                   </td>
-                  <td className="py-4 px-4 ">
+                  <td className="py-4 px-4">
                     <Button variant="action" color="orange" className="ml-auto">
                       <Link
-                        href={`/dashboard/revisiones/${item.id}`}
+                        href={`/dashboard/pending-reviews/${testimonial.id}`}
                         className="text-sm font-medium"
                       >
                         Ver detalles
