@@ -1,20 +1,10 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
-import api from "@/services/config";
 import Link from "next/link";
 import Button from "../Button";
-import { mockTestimonials, type Testimonial } from "@/data/mocks/mockTestimonials";
+import { useRecentTestimonials } from "@/hooks/useRecentTestimonials";
 
 export default function RecentTestimonials() {
-  const { data: testimonials, isLoading } = useQuery<Testimonial[]>({
-    queryKey: ["recent-testimonials"],
-    queryFn: async () => {
-      const { data } = await api.get("/testimonials/recent");
-      return data;
-    },
-  });
-
-  const displayTestimonials = testimonials || mockTestimonials;
+  const { testimonials, isLoading } = useRecentTestimonials(5);
 
   return (
     <div className="bg-white rounded-xl shadow-sm border-2 border-green-500 p-6">
@@ -23,7 +13,7 @@ export default function RecentTestimonials() {
           Últimos testimonios publicados
         </h2>
         <Button variant="ghost">
-          <Link href="/dashboard/testimonios" className="text-sm font-medium">
+          <Link href="/dashboard/testimonials/published" className="text-sm font-medium">
             Ver todo
           </Link>
         </Button>
@@ -43,22 +33,26 @@ export default function RecentTestimonials() {
               </div>
             ))}
           </>
+        ) : testimonials.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            No hay testimonios publicados aún
+          </div>
         ) : (
-          displayTestimonials.map((testimonial) => (
+          testimonials.map((testimonial) => (
             <Link
               key={testimonial.id}
               href={`/dashboard/testimonials/${testimonial.id}`}
               className="flex gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
             >
               <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-semibold flex-shrink-0">
-                {testimonial.name.charAt(0)}
+                {testimonial.client.charAt(0)}
               </div>
 
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-gray-800">
-                  {testimonial.name}
+                  {testimonial.client}
                 </h3>
-                <p className="text-sm text-gray-500 mb-1">{testimonial.role}</p>
+                <p className="text-sm text-gray-500 mb-1">{testimonial.course}</p>
                 <p className="text-sm text-gray-600">
                   {testimonial.content.length > 90
                     ? testimonial.content.slice(0, 90) + "..."
