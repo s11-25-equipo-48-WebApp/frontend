@@ -1,9 +1,9 @@
-import api from '@/services/config';
-import { transformAPIToTestimonial } from '@/utils/testimonial.utils';
-import { mockTestimonialsData } from '@/data/mocks/mockTestimonialsData';
+import api from "@/services/config";
+import { transformAPIToTestimonial } from "@/utils/testimonial.utils";
+import { mockTestimonialsData } from "@/data/mocks/mockTestimonialsData";
 
 // Variable de entorno para activar/desactivar mocks
-const USE_MOCKS = process.env.NEXT_PUBLIC_USE_MOCKS === 'true';
+const USE_MOCKS = process.env.NEXT_PUBLIC_USE_MOCKS === "true";
 
 export interface TestimonialAPIResponse {
   id: string;
@@ -12,21 +12,48 @@ export interface TestimonialAPIResponse {
   category_id: string;
   tags: string[];
   media_url: string;
-  media_type: 'image' | 'video' | 'none';
+  media_type: "image" | "video" | "none";
   author: string;
   email: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   created_at: string;
   updated_at: string;
 }
 
 export interface Testimonial {
   id: string;
-  client: string;
-  course: string;
-  received: string;
-  editor: string;
-  content: string;
+  title: string;
+  body: string;
+  category_id: string;
+  tags?: string[];
+  media_url?: string;
+  media_type?: "image" | "video" | "none";
+  author_name?: string;
+  email?: string;
+  status?: "pending" | "approved" | "rejected";
+  created_at?: string;
+  updated_at?: string;
+  // Campos legacy para compatibilidad
+  client?: string;
+  course?: string;
+  received?: string;
+  editor?: string;
+  content?: string;
+  image?: string;
+  author?: string;
+  role?: string;
+  createdAt?: string;
+}
+
+export interface CreateTestimonioDto {
+  title: string;
+  body: string;
+  category_id: string;
+  email: string;
+  author_name?: string;
+  tags?: string[];
+  media_url?: string;
+  media_type?: "image" | "video" | "none";
 }
 
 interface PaginatedResponse<T> {
@@ -37,15 +64,39 @@ interface PaginatedResponse<T> {
 }
 
 export const testimonialService = {
+  create: async (
+    organizationId: string,
+    data: CreateTestimonioDto,
+    accessToken: string,
+    isAdmin: boolean = false
+  ): Promise<Testimonial> => {
+    const payload = {
+      ...data,
+      // Si es admin, el estado es aprobado automáticamente
+      ...(isAdmin && { status: "approved" }),
+    };
+
+    const response = await api.post<TestimonialAPIResponse>(
+      `/organizations/${organizationId}/testimonios`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    return transformAPIToTestimonial(response.data);
+  },
+
   getPending: async (
     organizationId: string,
-    accessToken: string, 
+    accessToken: string,
     page: number = 1,
     limit: number = 50
   ): Promise<Testimonial[]> => {
-
     if (USE_MOCKS) {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       return mockTestimonialsData.map(transformAPIToTestimonial);
     }
 
@@ -54,7 +105,7 @@ export const testimonialService = {
       {
         params: { page, limit },
         headers: {
-          Authorization: `Bearer ${accessToken}`, 
+          Authorization: `Bearer ${accessToken}`,
         },
       }
     );
@@ -72,12 +123,11 @@ export const testimonialService = {
     categoryId?: string,
     tagId?: string
   ): Promise<Testimonial[]> => {
-
     if (USE_MOCKS) {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       // Filtrar solo los aprobados para simular testimonios públicos
       return mockTestimonialsData
-        .filter(t => t.status === 'approved')
+        .filter((t) => t.status === "approved")
         .map(transformAPIToTestimonial);
     }
 
@@ -112,19 +162,21 @@ export const testimonialService = {
       1,
       limit
     );
-    
+
     // Ordenar por fecha más reciente primero
-    return allPublic.sort((a, b) => {
-      const dateA = new Date(a.received.split('/').reverse().join('-'));
-      const dateB = new Date(b.received.split('/').reverse().join('-'));
-      return dateB.getTime() - dateA.getTime();
-    }).slice(0, limit);
+    return allPublic
+      .sort((a, b) => {
+        const dateA = new Date(a.received.split("/").reverse().join("-"));
+        const dateB = new Date(b.received.split("/").reverse().join("-"));
+        return dateB.getTime() - dateA.getTime();
+      })
+      .slice(0, limit);
   },
 
   getById: async (
     organizationId: string,
     id: string,
-    accessToken: string 
+    accessToken: string
   ): Promise<Testimonial> => {
     const response = await api.get<TestimonialAPIResponse>(
       `/organizations/${organizationId}/testimonios/${id}`,
@@ -141,7 +193,7 @@ export const testimonialService = {
   deleteMany: async (
     organizationId: string,
     ids: string[],
-    accessToken: string 
+    accessToken: string
   ): Promise<void> => {
     await Promise.all(
       ids.map((id) =>
