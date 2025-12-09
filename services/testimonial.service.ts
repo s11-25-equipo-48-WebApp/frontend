@@ -49,7 +49,7 @@ export const testimonialService = {
       return mockTestimonialsData.map(transformAPIToTestimonial);
     }
 
-    const response = await api.get<PaginatedResponse<TestimonialAPIResponse>>(
+    const response = await api.get<{data:PaginatedResponse<TestimonialAPIResponse>}>(
       `/organizations/${organizationId}/testimonios/pending`,
       {
         params: { page, limit },
@@ -59,7 +59,7 @@ export const testimonialService = {
       }
     );
 
-    const apiTestimonials = response.data.data || [];
+    const apiTestimonials = response.data.data.data || [];
     return apiTestimonials.map(transformAPIToTestimonial);
   },
 
