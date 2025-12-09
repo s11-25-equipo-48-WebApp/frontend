@@ -10,17 +10,19 @@ interface Category {
 }
 
 export function useCategories() {
-    const { data: session } = useSession()
+    const { data: session } = useSession();
     const { currentOrganization } = useStore();
 
     return useQuery({
         queryKey: ['categories', currentOrganization],
         queryFn: async () => {
-            const response = await api.get<Category[]>(`/organizations/${currentOrganization}/categories`, {
+            const {data:response} = await api.get<{data: Category[]}>(`/organizations/${currentOrganization}/categories`, {
                 headers: {
                     'Authorization': `Bearer ${session?.user?.accessToken}`
                 }
             });
+            console.log(response);
+            
             return response.data;
         },
         enabled: !!currentOrganization && !!session?.user?.accessToken,
