@@ -3,8 +3,8 @@ import { useTheme } from 'next-themes';
 import { ToastContainer } from 'react-toastify';
 
 export default function Toast() {
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
   return (
-    <ToastContainer autoClose={2000} theme={theme} />
+    <ToastContainer autoClose={2000} theme={resolvedTheme} />
   );
 }
