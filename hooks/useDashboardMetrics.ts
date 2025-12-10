@@ -17,6 +17,7 @@ export const useDashboardMetrics = (
   const { data: metrics, isLoading, error, refetch } = useQuery({
     queryKey: ['dashboard-metrics', currentOrganization, startDate, endDate],
     queryFn: async () => {
+      
       if (!startDate && !endDate) {
         // Si no se proporcionan fechas, obtener métricas del mes actual
         return analyticsService.getCurrentMonthMetrics(
@@ -24,6 +25,7 @@ export const useDashboardMetrics = (
           session?.user?.accessToken!
         );
       }
+        
       
       return analyticsService.getMetrics(
         currentOrganization!,
