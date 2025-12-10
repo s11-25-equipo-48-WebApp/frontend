@@ -44,8 +44,6 @@ export default function Home() {
           Authorization: `Bearer ${session?.user?.accessToken}`,
         },
       });
-      console.log(resp);
-
       const data = resp.data;
       setOrganizations(data);
     } catch (err) {

@@ -1,19 +1,19 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import Button from "@/components/Button";
+'use client';
+import React, { useEffect, useState } from 'react';
+import Button from '@/components/Button';
 import {
   RiSearchLine,
   RiUser3Line,
   RiDeleteBin6Line,
   RiLoader5Line,
-} from "react-icons/ri";
-import { useSession } from "next-auth/react";
-import { useStore } from "@/store/zustand";
-import api from "@/services/config";
-import { toast } from "react-toastify";
-import AddUserCard from "@/components/Modals/AddUserCard";
-import DeleteModal from "@/components/Modals/DeleteModal";
-import useRefreshAccessTokenClient from "@/hooks/useRefreshToken.client";
+} from 'react-icons/ri';
+import { useSession } from 'next-auth/react';
+import { useStore } from '@/store/zustand';
+import api from '@/services/config';
+import { toast } from 'react-toastify';
+import AddUserCard from '@/components/Modals/AddUserCard';
+import DeleteModal from '@/components/Modals/DeleteModal';
+import useRefreshAccessTokenClient from '@/hooks/useRefreshToken.client';
 
 type Editor = {
   id: string;
@@ -23,7 +23,7 @@ type Editor = {
 };
 
 export default function Page() {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [editors, setEditors] = useState<Editor[]>([]);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [showInvite, setShowInvite] = useState(false);
@@ -58,7 +58,7 @@ export default function Page() {
       const newToken = await refreshToken();
       const tokenToUse =
         newToken ?? (session?.user?.accessToken as string | undefined);
-      const { data } = await api.get(
+      const { data: { data } } = await api.get(
         `/organization/${organizationId}/members`,
         {
           headers: {
@@ -66,6 +66,7 @@ export default function Page() {
           },
         }
       );
+
       if (Array.isArray(data)) {
         setEditors(data);
       } else if (data && Array.isArray(data.items)) {
@@ -80,8 +81,8 @@ export default function Page() {
       // ensure current user is not selected
       if (currentUserId) setSelected((s) => ({ ...s, [currentUserId]: false }));
     } catch (error) {
-      console.error("Error fetching members:", error);
-      toast.error("Error cargando miembros");
+      console.error('Error fetching members:', error);
+      toast.error('Error cargando miembros');
     } finally {
       setIsLoadingMembers(false);
     }
@@ -94,13 +95,13 @@ export default function Page() {
 
   const handleDelete = async (ids: string[]) => {
     if (!organizationId) {
-      toast.error("Organization ID no disponible");
+      toast.error('Organization ID no disponible');
       return;
     }
 
     // proteger contra borrar al propio usuario
     if (currentUserId && ids.includes(currentUserId)) {
-      toast.error("No puedes eliminar tu propia cuenta");
+      toast.error('No puedes eliminar tu propia cuenta');
       return;
     }
 
@@ -122,8 +123,8 @@ export default function Page() {
       setSelected({});
       refreshToken();
     } catch (error) {
-      console.error("Error eliminando miembros:", error);
-      toast.error("Error al eliminar miembros");
+      console.error('Error eliminando miembros:', error);
+      toast.error('Error al eliminar miembros');
     } finally {
       setIsDeleting(false);
       setShowDelete(false);
@@ -136,7 +137,7 @@ export default function Page() {
   };
   const handleInviteEditors = async (emails: string[]) => {
     if (!organizationId) {
-      toast.error("Organization ID no disponible");
+      toast.error('Organization ID no disponible');
       return;
     }
 
@@ -147,7 +148,7 @@ export default function Page() {
       for (const email of emails) {
         await api.post(
           `/organization/${organizationId}/members`,
-          { email, role: "editor" },
+          { email, role: 'editor' },
           {
             headers: {
               Authorization: tokenToUse ? `Bearer ${tokenToUse}` : undefined,
@@ -161,8 +162,8 @@ export default function Page() {
       await fetchMembers();
       refreshToken();
     } catch (error) {
-      console.error("Error invitando editores:", error);
-      toast.error("Error al invitar editores");
+      console.error('Error invitando editores:', error);
+      toast.error('Error al invitar editores');
     }
   };
 
@@ -204,16 +205,14 @@ export default function Page() {
         aria-label="Eliminar seleccionados"
         name="eliminar miembros seleccionados"
         onClick={() => setShowDelete(true)}
-        className={` bg-[#FAC5C3] text-white rounded-full h-16 p-4 flex items-center justify-center shadow-md cursor-pointer transition-all ${
-          anySelected ? "px-3 flex" : "w-10 hidden"
-        }`}
+        className={` bg-[#FAC5C3] text-white rounded-full h-16 p-4 flex items-center justify-center shadow-md cursor-pointer transition-all ${anySelected ? 'px-3 flex' : 'w-10 hidden'
+          }`}
         disabled={!anySelected}
         title={
           anySelected
-            ? `${selectedIds.length} seleccionad${
-                selectedIds.length > 1 ? "os" : "o"
-              }`
-            : "Selecciona miembros para eliminar"
+            ? `${selectedIds.length} seleccionad${selectedIds.length > 1 ? 'os' : 'o'
+            }`
+            : 'Selecciona miembros para eliminar'
         }
       >
         <RiDeleteBin6Line size={28} />
@@ -245,9 +244,8 @@ export default function Page() {
               return (
                 <div
                   key={editor.id}
-                  className={`min-w-[720px] grid grid-cols-12 items-center gap-4 rounded-xl p-4 shadow-sm transition-colors ${
-                    isSel ? "bg-[#FAC5C3]" : "bg-white dark:bg-slate-900"
-                  }`}
+                  className={`min-w-[720px] grid grid-cols-12 items-center gap-4 rounded-xl p-4 shadow-sm transition-colors ${isSel ? 'bg-[#FAC5C3]' : 'bg-white dark:bg-slate-900'
+                    }`}
                 >
                   <div className="col-span-1 flex items-center justify-center">
                     <input
@@ -263,7 +261,7 @@ export default function Page() {
                       }
                       title={
                         editor.id === currentUserId
-                          ? "No puedes seleccionar tu propia cuenta"
+                          ? 'No puedes seleccionar tu propia cuenta'
                           : undefined
                       }
                     />
@@ -271,12 +269,11 @@ export default function Page() {
 
                   <div className="col-span-4 flex items-center gap-4">
                     <div
-                      className={`w-10 h-10 rounded-lg ring-1 ring-yellow-500 text-yellow-800 flex items-center justify-center shrink-0 ${
-                        isSel ? "bg-transparent text-white" : ""
-                      }`}
+                      className={`w-10 h-10 rounded-lg ring-1 ring-yellow-500 text-yellow-800 flex items-center justify-center shrink-0 ${isSel ? 'bg-transparent text-white' : ''
+                        }`}
                     >
                       <RiUser3Line
-                        className={isSel ? "text-white" : ""}
+                        className={isSel ? 'text-white' : ''}
                         size={24}
                       />
                     </div>
@@ -335,7 +332,7 @@ export default function Page() {
         isLoading={isDeleting}
         title={
           deleteTarget
-            ? "Eliminar miembro"
+            ? 'Eliminar miembro'
             : `Eliminar ${selectedIds.length} miembro(s)`
         }
         message={
