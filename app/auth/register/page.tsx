@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useForm, FormProvider } from 'react-hook-form';
 import { toast } from 'react-toastify';
 interface RegisterPageProps {
-  name: string;
+  fullName: string;
   email: string;
   password: string;
 }
@@ -16,14 +16,14 @@ export default function RegisterPage() {
   const router = useRouter();
   const methods = useForm<RegisterPageProps>({
     defaultValues: {
-      name: '',
+      fullName: '',
       email: '',
       password: '',
     }
   });
   const createAccount = useMutation({
-    mutationFn: async ({ email, password }: RegisterPageProps) => {
-      const response = await api.post('/auth/register', { email, password });
+    mutationFn: async ({ fullName, email, password }: RegisterPageProps) => {
+      const response = await api.post('/auth/register', { fullName, email, password });
       return response.data;
     },
     onSuccess: () => {
@@ -47,7 +47,7 @@ export default function RegisterPage() {
         <FormProvider {...methods}>
           <form onSubmit={methods.handleSubmit((data) => createAccount.mutate(data))} className="mt-8 space-y-6">
             <div className="space-y-4 flex flex-col">
-              <InputForm label="Nombre y Apellido" formKey="name" required placeholder='Ingresa tu nombre completo' />
+              <InputForm label="Nombre y Apellido" formKey="fullName" required placeholder='Ingresa tu nombre completo' />
               <InputForm label="Correo" formKey="email" type="email" required placeholder='Ingresa tu correo' pattern={/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/} errorMessage="Ingresa un correo válido" />
               <InputForm label="Contraseña" formKey="password" type="password" required placeholder='Ingresa tu contraseña' pattern={/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/} errorMessage="La contraseña debe tener al menos 6 caracteres, incluyendo letras y números" minLength={8} />
             </div>
