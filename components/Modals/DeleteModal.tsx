@@ -10,7 +10,6 @@ interface DeleteModalProps {
   itemName?: string;
   confirmButtonText?: string;
   cancelButtonText?: string;
-  // 1. Agregamos la propiedad opcional aquí
   isLoading?: boolean;
 }
 
@@ -23,7 +22,6 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
   itemName,
   confirmButtonText = 'Eliminar',
   cancelButtonText = 'Cancelar',
-  // 2. La recibimos aquí (por defecto false)
   isLoading: externalLoading = false, 
 }) => {
   const [internalLoading, setInternalLoading] = useState(false);
@@ -104,7 +102,6 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
               type="button"
               className="px-12 py-2 cursor-pointer bg-transparent shadow-md shadow-black/40 text-red-600 border-red-600 border-2 rounded-full hover:text-white hover:bg-red-700 transition-colors font-medium disabled:opacity-50"
               onClick={handleConfirm}
-              // 4. Usamos la variable combinada
               disabled={isBusy}
             >
               {isBusy ? 'Eliminando...' : confirmButtonText}
