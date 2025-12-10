@@ -39,11 +39,12 @@ export default function Home() {
       setLoading(true);
       setError(null);
 
-      const resp = await api.get('/organization/my-organizations', {
+      const { data: resp } = await api.get('/organization/my-organizations', {
         headers: {
           Authorization: `Bearer ${session?.user?.accessToken}`,
         },
       });
+      console.log(resp);
 
       const data = resp.data;
       setOrganizations(data);

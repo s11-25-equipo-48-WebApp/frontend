@@ -8,7 +8,7 @@ export default function useRefreshAccessTokenClient() {
     try {
       const { data } = await api.post("/auth/refresh");
 
-      const newToken = data?.accessToken;
+      const newToken = data?.data.accessToken;
       if (newToken) {
         try {
           await update?.({

@@ -1,13 +1,5 @@
 import Button from "@/components/Button";
-
-interface Testimonial {
-  id: string;
-  client: string;
-  course: string;
-  received: string;
-  editor: string;
-  content: string;
-}
+import type { Testimonial } from "@/services/testimonial.service";
 
 interface TestimonialTableProps {
   testimonials: Testimonial[];
@@ -109,7 +101,7 @@ export default function TestimonialTable({
                       variant="primary"
                       color="orange"
                       size="fit"
-                      className="!text-sm px-4 py-2"
+                      className="text-sm! px-4 py-2"
                     >
                       Ver detalles
                     </Button>

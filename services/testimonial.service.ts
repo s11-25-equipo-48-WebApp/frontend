@@ -100,17 +100,16 @@ export const testimonialService = {
       return mockTestimonialsData.map(transformAPIToTestimonial);
     }
 
-    const response = await api.get<PaginatedResponse<TestimonialAPIResponse>>(
-      `/organizations/${organizationId}/testimonios/pending`,
-      {
-        params: { page, limit },
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    const response = await api.get<{
+      data: PaginatedResponse<TestimonialAPIResponse>;
+    }>(`/organizations/${organizationId}/testimonios/pending`, {
+      params: { page, limit },
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
-    const apiTestimonials = response.data.data || [];
+    const apiTestimonials = response.data.data.data || [];
     return apiTestimonials.map(transformAPIToTestimonial);
   },
 
@@ -166,8 +165,12 @@ export const testimonialService = {
     // Ordenar por fecha más reciente primero
     return allPublic
       .sort((a, b) => {
-        const dateA = new Date(a.received.split("/").reverse().join("-"));
-        const dateB = new Date(b.received.split("/").reverse().join("-"));
+        const dateA = new Date(
+          (a.received ?? "").split("/").reverse().join("-")
+        );
+        const dateB = new Date(
+          (b.received ?? "").split("/").reverse().join("-")
+        );
         return dateB.getTime() - dateA.getTime();
       })
       .slice(0, limit);

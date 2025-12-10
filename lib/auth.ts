@@ -52,22 +52,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       authorize: async (credentials) => {
         try {
           const { email, password } = credentials;
-          const { data } = await api.post('/auth/login', { email, password });
+          const { data:{data} } = await api.post('/auth/login', { email, password });
 
           console.log('Login response:', {
             hasData: !!data,
-            hasUser: !!data?.user,
+            hasUser: !!data,
             hasAccessToken: !!data?.accessToken,
-            userFields: data?.user ? Object.keys(data.user) : [],
+            userFields: data ? Object.keys(data) : [],
           });
 
-          if (!data || !data.user || !data.accessToken) {
+          if (!data || !data.accessToken) {
             console.error('Login failed: Missing data', { data });
             return null;
           }
 
           // WORKAROUND: Extraer rol de organizations si no existe a nivel de user
-          const user = data.user;
+          const user = data;
           let roleFromUser = user.role;
 
           if (

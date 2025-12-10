@@ -13,7 +13,10 @@ export default function RecentTestimonials() {
           Últimos testimonios publicados
         </h2>
         <Button variant="ghost">
-          <Link href="/dashboard/testimonials/published" className="text-sm font-medium">
+          <Link
+            href="/dashboard/testimonials/published"
+            className="text-sm font-medium"
+          >
             Ver todo
           </Link>
         </Button>
@@ -44,19 +47,21 @@ export default function RecentTestimonials() {
               href={`/dashboard/testimonials/${testimonial.id}`}
               className="flex gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
             >
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-semibold flex-shrink-0">
-                {testimonial.client.charAt(0)}
+              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-semibold shrink-0">
+                {(testimonial.client ?? "T").charAt(0)}
               </div>
 
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-gray-800">
-                  {testimonial.client}
+                  {testimonial.client ?? "Sin nombre"}
                 </h3>
-                <p className="text-sm text-gray-500 mb-1">{testimonial.course}</p>
+                <p className="text-sm text-gray-500 mb-1">
+                  {testimonial.course ?? "Sin curso"}
+                </p>
                 <p className="text-sm text-gray-600">
-                  {testimonial.content.length > 90
+                  {testimonial.content && testimonial.content.length > 90
                     ? testimonial.content.slice(0, 90) + "..."
-                    : testimonial.content}
+                    : testimonial.content ?? "Sin contenido"}
                 </p>
               </div>
             </Link>

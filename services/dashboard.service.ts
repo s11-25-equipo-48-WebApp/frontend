@@ -1,6 +1,7 @@
 import api from "@/services/config";
 
-export interface Testimonial {
+// Tipo local para los datos del dashboard (diferente de testimonial.service)
+interface DashboardTestimonial {
   id: string;
   client: string;
   course: string;
@@ -11,7 +12,7 @@ export interface Testimonial {
 
 // Queries
 export const testimonialQueries = {
-  pending: async (): Promise<Testimonial[]> => {
+  pending: async (): Promise<DashboardTestimonial[]> => {
     const response = await api.get("/testimonials/pending");
     return response.data;
   },
@@ -22,7 +23,7 @@ export const testimonialQueries = {
 };
 
 // Mock data para desarrollo
-export const mockTestimonials: Testimonial[] = [
+export const mockTestimonials: DashboardTestimonial[] = [
   {
     id: "1",
     client: "Juan P.",
@@ -101,7 +102,7 @@ export const categoryService = {
       `/organizations/${organizationId}/categories`,
       { headers }
     );
-    return response.data;
+    return response.data.data;
   },
 
   createCategory: async (
