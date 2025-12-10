@@ -15,7 +15,7 @@ interface Testimonial {
   author_name?: string;
   category_id?: string;
   tags?: string[];
-  status?: "pending" | "approved" | "rejected";
+  status?: "pendiente" | "aprobado" | "rechazado";
   created_at?: string;
   // Campos legacy para compatibilidad
   client?: string;

@@ -11,7 +11,7 @@ import { useState, useEffect } from 'react';
 import useRefreshAccessTokenClient from '@/hooks/useRefreshToken.client';
 import { SquarePen, Users, Trash2 } from 'lucide-react';
 interface Organization {
-  id: number;
+  id: string;
   name: string;
   description: string;
   role: string;
@@ -47,7 +47,13 @@ export default function Home() {
       console.log(resp);
 
       const data = resp.data;
-      setOrganizations(data);
+      // asegurar que no haya duplicados por id (a veces la API puede devolver entradas repetidas)
+      if (Array.isArray(data)) {
+        const unique = Array.from(new Map(data.map((o: any) => [o.id, o])).values());
+        setOrganizations(unique);
+      } else {
+        setOrganizations([]);
+      }
     } catch (err) {
       console.error('Error fetching organizations:', err);
       setError(err instanceof Error ? err.message : 'Error desconocido');

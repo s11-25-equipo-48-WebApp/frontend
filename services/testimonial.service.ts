@@ -15,7 +15,7 @@ export interface TestimonialAPIResponse {
   media_type: "image" | "video" | "none";
   author: string;
   email: string;
-  status: "pending" | "approved" | "rejected";
+  status?: "pendiente" | "aprobado" | "rechazado";
   created_at: string;
   updated_at: string;
 }
@@ -30,7 +30,7 @@ export interface Testimonial {
   media_type?: "image" | "video" | "none";
   author_name?: string;
   email?: string;
-  status?: "pending" | "approved" | "rejected";
+  status?: "pendiente" | "aprobado" | "rechazado";
   created_at?: string;
   updated_at?: string;
   // Campos legacy para compatibilidad
@@ -73,7 +73,7 @@ export const testimonialService = {
     const payload = {
       ...data,
       // Si es admin, el estado es aprobado automáticamente
-      ...(isAdmin && { status: "approved" }),
+      ...(isAdmin && { status: "aprobado" }),
     };
 
     const response = await api.post<TestimonialAPIResponse>(
@@ -126,7 +126,7 @@ export const testimonialService = {
       await new Promise((resolve) => setTimeout(resolve, 500));
       // Filtrar solo los aprobados para simular testimonios públicos
       return mockTestimonialsData
-        .filter((t) => t.status === "approved")
+        .filter((t) => t.status === "aprobado")
         .map(transformAPIToTestimonial);
     }
 
