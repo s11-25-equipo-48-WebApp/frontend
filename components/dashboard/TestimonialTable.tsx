@@ -1,125 +1,127 @@
-import Button from "@/components/Button";
-
-interface Testimonial {
-  id: string;
-  client: string;
-  course: string;
-  received: string;
-  editor: string;
-  content: string;
-}
+import { Testimonial } from "@/services/testimonial.service";
+import Link from "next/link";
 
 interface TestimonialTableProps {
   testimonials: Testimonial[];
   selectedIds: string[];
   selectAll: boolean;
-  filterBy: string;
   onToggleSelectAll: () => void;
   onToggleSelect: (id: string) => void;
-  onViewDetails: (id: string) => void;
 }
 
 export default function TestimonialTable({
   testimonials,
   selectedIds,
   selectAll,
-  filterBy,
   onToggleSelectAll,
   onToggleSelect,
-  onViewDetails,
 }: TestimonialTableProps) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-gray-100">
-            <th className="text-left px-6 py-4">
-              <input
-                type="checkbox"
-                checked={selectAll && testimonials.length > 0}
-                onChange={onToggleSelectAll}
-                disabled={testimonials.length === 0}
-                className="w-5 h-5 rounded border-gray-300 text-gray-700 focus:ring-2 focus:ring-gray-200 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-              />
-            </th>
-            <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
-              Cliente/Curso
-            </th>
-            <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
-              Recibido
-            </th>
-            <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
-              Editor
-            </th>
-            <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
-              Contenido
-            </th>
-            <th className="text-right px-6 py-4"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {testimonials.length === 0 ? (
-            <tr>
-              <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                {filterBy
-                  ? "No se encontraron testimonios con los filtros aplicados"
-                  : ""}
-              </td>
+    <div className="bg-white w-full">
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-left border-collapse text-center">
+          <thead>
+            {/* Cabecera limpia sin fondo gris, solo texto negro y bold */}
+            <tr className="text-sm font-bold text-gray-900 border-b border-gray-100">
+              {/* Checkbox */}
+              <th scope="col" className="py-6 pl-4 pr-3 w-12">
+                <input
+                  type="checkbox"
+                  className="h-5 w-5 rounded border-gray-300 text-gray-900 focus:ring-0 cursor-pointer"
+                  checked={selectAll}
+                  onChange={onToggleSelectAll}
+                />
+              </th>
+
+              <th scope="col" className="py-6 px-4 text-center">
+                Autor / Título
+              </th>
+
+              <th scope="col" className="py-6 px-4 text-center">
+                Fecha de creación
+              </th>
+
+              <th scope="col" className="py-6 px-4 text-center">
+                Editor
+              </th>
+
+              <th scope="col" className="py-6 px-4 text-center">
+                Medio/Categoria
+              </th>
+
+              <th scope="col" className="py-6 px-4 text-center">
+                {/* Espacio vacío para la columna de acciones */}
+              </th>
             </tr>
-          ) : (
-            testimonials.map((testimonial) => {
+          </thead>
+          
+          <tbody className="divide-y divide-gray-50 text-gray-700 text-center" >
+            {testimonials.map((testimonial) => {
               const isSelected = selectedIds.includes(testimonial.id);
 
               return (
                 <tr
                   key={testimonial.id}
-                  className={`border-b border-gray-50 transition-colors ${
-                    isSelected ? "bg-red-50" : "hover:bg-gray-50"
+                  className={`group transition-colors ${
+                    isSelected ? "bg-gray-50" : "hover:bg-gray-50"
                   }`}
                 >
-                  <td className="px-6 py-4">
+                  {/* Checkbox */}
+                  <td className="py-6 pl-4 pr-3">
                     <input
                       type="checkbox"
+                      className="h-5 w-5 rounded border-gray-400 text-gray-800 focus:ring-0 cursor-pointer"
                       checked={isSelected}
                       onChange={() => onToggleSelect(testimonial.id)}
-                      className="w-5 h-5 rounded border-gray-300 text-gray-700 focus:ring-2 focus:ring-gray-200 cursor-pointer"
                     />
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-gray-800">
-                      {testimonial.client}
+
+                  {/* Columna 1: Cliente / Curso (Combinados) */}
+                  <td className="py-6 px-4">
+                    <div className="text-sm font-medium text-gray-900">
+                      {/* Asumiendo que 'client' es el nombre y 'title' el curso */}
+                      {testimonial.author_name} / {testimonial.title}
                     </div>
+                  </td>
+
+                  {/* Columna 2: Fecha */}
+                  <td className="py-6 px-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500">
-                      {testimonial.course}
+                      {testimonial.formattedDate}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    {testimonial.received}
+
+                  {/* Columna 3: Editor */}
+                  <td className="py-6 px-4 whitespace-nowrap">
+                    <div className="text-base text-gray-700">
+                      {testimonial.editor || "Sin editor"}
+                    </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    {testimonial.editor}
+
+                  {/* Columna 4: Medio / Categoría (Texto simple, no badges) */}
+                  <td className="py-6 px-4 whitespace-nowrap">
+                    <div className="text-base text-gray-700 capitalize">
+                      {testimonial.mediaType === "none" ? "Texto" : testimonial.mediaType}
+                      <span className="mx-1 text-gray-400">/</span>
+                      {testimonial.categoryName}
+                    </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    {testimonial.content}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <Button
-                      type="button"
-                      onClick={() => onViewDetails(testimonial.id)}
-                      variant="primary"
-                      color="orange"
-                      size="fit"
-                      className="!text-sm px-4 py-2"
+
+                  {/* Columna 5: Botón Detalles */}
+                  <td className="py-6 px-4 text-right">
+                    <Link
+                      href={`/dashboard/testimonials/${testimonial.id}`}
+                      className="inline-flex items-center justify-center px-6 py-2 rounded-full text-sm font-bold bg-[#FFF4E5] text-[#D97706] hover:bg-[#ffeccf] transition-colors"
                     >
-                      Ver detalles
-                    </Button>
+                      Detalles
+                    </Link>
                   </td>
                 </tr>
               );
-            })
-          )}
-        </tbody>
-      </table>
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

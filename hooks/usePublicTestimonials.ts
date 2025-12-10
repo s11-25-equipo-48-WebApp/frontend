@@ -3,6 +3,7 @@ import { useSession } from 'next-auth/react';
 import { useStore } from '@/store/zustand';
 import { testimonialService } from '@/services/testimonial.service';
 import { filterTestimonials, sortTestimonials, FilterType, SortType } from '@/utils/testimonial.utils';
+import useRefreshAccessTokenClient from '@/hooks/useRefreshToken.client';
 
 export const usePublicTestimonials = (
   filterBy: FilterType = '',
@@ -12,16 +13,22 @@ export const usePublicTestimonials = (
 ) => {
   const { data: session } = useSession();
   const { currentOrganization } = useStore();
+  const refreshToken = useRefreshAccessTokenClient();
 
   const { data: rawTestimonials = [], isLoading, error } = useQuery({
     queryKey: ['testimonials', 'public', currentOrganization, page, limit],
-    queryFn: () =>
-      testimonialService.getPublic(
+    queryFn: async () => {
+      // Intentar refrescar el token antes de hacer la petición
+      const newToken = await refreshToken();
+      const tokenToUse = newToken ?? (session?.user?.accessToken as string | undefined);
+      
+      return testimonialService.getPublic(
         currentOrganization!,
-        session?.user?.accessToken!,
+        tokenToUse!,
         page,
         limit
-      ),
+      );
+    },
     enabled: !!currentOrganization && !!session?.user?.accessToken,
     staleTime: 5 * 60 * 1000, // 5 minutos
   });
