@@ -14,8 +14,8 @@ export default function DashboardPage() {
   const { data: organization } = useQuery({
     queryKey: ["organization", currentOrganization],
     queryFn: async () => {
-      // const organization = await api.get(`/organizations/${currentOrganization}`)
-      // return organization.data
+       //const organization = await api.get(`/organizations/${currentOrganization}`)
+       //return organization.data
       return {
         name: "Organization " + currentOrganization,
         description: "Description " + currentOrganization,

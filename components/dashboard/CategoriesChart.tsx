@@ -13,6 +13,7 @@ interface CategoryData {
 export default function CategoriesChart() {
   const [timeframe, setTimeframe] = useState<'semana' | 'mes'>('semana');
 
+  /*
   const { data: categories } = useQuery<CategoryData>({
     queryKey: ['categories', timeframe],
     queryFn: async () => {
@@ -20,6 +21,7 @@ export default function CategoriesChart() {
       return data;
     },
   });
+  */
 
   // Mock data
   const mockData = {
@@ -28,7 +30,8 @@ export default function CategoriesChart() {
     negative: 15,
   };
 
-  const displayData = categories || mockData;
+  //const displayData = categories || mockData;
+  const displayData =mockData;
   const total = displayData.positive + displayData.neutral + displayData.negative;
 
   return (

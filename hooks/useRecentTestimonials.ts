@@ -1,20 +1,26 @@
-import { useQuery } from '@tanstack/react-query';
-import { useSession } from 'next-auth/react';
-import { useStore } from '@/store/zustand';
-import { testimonialService } from '@/services/testimonial.service';
+import { useQuery } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
+import { useStore } from "@/store/zustand";
+import { testimonialService } from "@/services/testimonial.service";
 
 export const useRecentTestimonials = (limit: number = 5) => {
   const { data: session } = useSession();
   const { currentOrganization } = useStore();
 
-  const { data: testimonials = [], isLoading, error } = useQuery({
-    queryKey: ['testimonials', 'recent', currentOrganization, limit],
-    queryFn: () =>
-      testimonialService.getRecent(
+  const {
+    data: testimonials = [],
+    isLoading,
+  } = useQuery({
+    queryKey: ["testimonials", "recent", currentOrganization, limit],
+    queryFn: async () => {
+      const result = await testimonialService.getRecent(
         currentOrganization!,
         session?.user?.accessToken!,
         limit
-      ),
+      );
+
+      return result;
+    },
     enabled: !!currentOrganization && !!session?.user?.accessToken,
     staleTime: 5 * 60 * 1000, // 5 minutos
   });
@@ -22,7 +28,6 @@ export const useRecentTestimonials = (limit: number = 5) => {
   return {
     testimonials,
     isLoading,
-    error,
     hasOrganization: !!currentOrganization,
   };
 };

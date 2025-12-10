@@ -1,7 +1,4 @@
-import api from '@/services/config';
-
-// Variable de entorno para activar/desactivar mocks
-const USE_MOCKS = process.env.NEXT_PUBLIC_USE_MOCKS === 'true';
+import api from "@/services/config";
 
 export interface AnalyticsMetricsResponse {
   testimonios_publicados: number;
@@ -19,26 +16,22 @@ export interface DashboardMetrics {
   views: number;
 }
 
-// Mock data para desarrollo
-const mockMetrics: DashboardMetrics = {
-  publishedMonth: 90,
-  receivedMonth: 128,
-  approvalRate: 89,
-  consentRate: 92,
-  views: 234,
-};
+interface APIResponse<T> {
+  success: boolean;
+  data: T;
+}
 
-/**
- * Transforma la respuesta de la API al formato usado en el frontend
- */
-const transformAPIToMetrics = (apiData: AnalyticsMetricsResponse): DashboardMetrics => {
-  return {
+const transformAPIToMetrics = (
+  apiData: AnalyticsMetricsResponse
+): DashboardMetrics => {
+  const transformed = {
     publishedMonth: apiData.testimonios_publicados,
     receivedMonth: apiData.testimonios_recibidos,
     approvalRate: apiData.tasa_aprobacion,
     consentRate: apiData.tasa_consentimiento,
     views: apiData.visualizaciones,
   };
+  return transformed;
 };
 
 export const analyticsService = {
@@ -55,18 +48,12 @@ export const analyticsService = {
     startDate?: string,
     endDate?: string
   ): Promise<DashboardMetrics> => {
-    if (USE_MOCKS) {
-      // Simular delay de red
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return mockMetrics;
-    }
-
     const params: any = {};
     if (startDate) params.start_date = startDate;
     if (endDate) params.end_date = endDate;
 
-    const response = await api.get<AnalyticsMetricsResponse>(
-      `/api/v1/organizations/${organizationId}/analytics/metrics`,
+    const response = await api.get<APIResponse<AnalyticsMetricsResponse>>(
+      `/organizations/${organizationId}/analytics/metrics`,
       {
         params,
         headers: {
@@ -75,7 +62,8 @@ export const analyticsService = {
       }
     );
 
-    return transformAPIToMetrics(response.data);
+    const apiMetrics = response.data.data;
+    return transformAPIToMetrics(apiMetrics);
   },
 
   /**
@@ -85,11 +73,19 @@ export const analyticsService = {
     organizationId: string,
     accessToken: string
   ): Promise<DashboardMetrics> => {
-    // Calcular el primer día del mes actual
     const now = new Date();
-    const startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const startDate = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      1
+    ).toISOString();
     const endDate = now.toISOString();
 
-    return analyticsService.getMetrics(organizationId, accessToken, startDate, endDate);
+    return analyticsService.getMetrics(
+      organizationId,
+      accessToken,
+      startDate,
+      endDate
+    );
   },
 };

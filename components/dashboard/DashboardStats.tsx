@@ -11,14 +11,14 @@ export default function DashboardStats() {
       title: 'Testimonios publicados (mes)',
       value: metrics?.publishedMonth ?? 0,
       color: 'bg-green-500',
-      link: '/dashboard/(admin)/testimonials',
+      link: '/dashboard/testimonials/published',
       showViewAll: true,
     },
     {
       title: 'Testimonios recibidos (mes)',
       value: metrics?.receivedMonth ?? 0,
       color: 'bg-blue-500',
-      link: '/dashboard/(admin)/pending-reviews',
+      link: '/dashboard/pending-reviews',
       showViewAll: true,
     },
     {

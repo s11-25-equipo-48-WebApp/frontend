@@ -2,6 +2,12 @@ import { Trash2 } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { FilterType, SortType } from "@/utils/testimonial.utils";
 
+interface Category {
+  id: string;
+  name: string;
+  description?: string;
+}
+
 interface FilterFormData {
   filterBy: FilterType;
   sortBy: SortType;
@@ -14,6 +20,8 @@ interface TestimonialFiltersProps {
   isDeleting: boolean;
   onDelete: () => void;
   onFilterChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  categories?: Category[];
+  isLoadingCategories?: boolean;
 }
 
 export default function TestimonialFilters({
@@ -23,6 +31,8 @@ export default function TestimonialFilters({
   isDeleting,
   onDelete,
   onFilterChange,
+  categories = [],
+  isLoadingCategories = false,
 }: TestimonialFiltersProps) {
   return (
     <div className="flex items-center justify-between">
@@ -52,14 +62,28 @@ export default function TestimonialFilters({
         <select
           {...methods.register("filterBy")}
           onChange={onFilterChange}
-          className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-100"
+          disabled={isLoadingCategories}
+          className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {/*Tengo que tener en cuenta que las categorías pueden cambiar (debo hacer un get de las categorías que hay disponibles por el momento) */}
           <option value="">Filtrar</option>
-          <option value="video">Solo videos</option>
-          <option value="text">Solo textos</option>
-          <option value="positive">Solo positivos</option>
-          <option value="negative">Solo negativos</option>
+          
+          {/* Filtros por tipo de medio */}
+          <optgroup label="Tipo de contenido">
+            <option value="video">Solo videos</option>
+            <option value="image">Solo imágenes</option>
+            <option value="text">Solo textos</option>
+          </optgroup>
+
+          {/* Filtros por categoría (dinámico) */}
+          {categories.length > 0 && (
+            <optgroup label="Categorías">
+              {categories.map((category) => (
+                <option key={category.id} value={`category:${category.id}`}>
+                  {category.name}
+                </option>
+              ))}
+            </optgroup>
+          )}
         </select>
 
         <select
@@ -69,8 +93,9 @@ export default function TestimonialFilters({
           <option value="">Ordenar por</option>
           <option value="date-desc">Más recientes</option>
           <option value="date-asc">Más antiguos</option>
-          <option value="client">Cliente (A-Z)</option>
-          <option value="editor">Editor (A-Z)</option>
+          <option value="titulo">Título (A-Z)</option>
+          <option value="medio">Medio (A-Z)</option>
+          <option value="categoria">Categoría (A-Z)</option>
         </select>
       </div>
     </div>
