@@ -152,18 +152,20 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-background">
-      <nav className="border-b border-foreground/10 bg-card sticky top-0 z-50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h1 className="text-xl font-bold text-foreground">Mi App</h1>
-            </div>
-            <div className="flex items-center gap-4">
-              <UserInfo />
-            </div>
-          </div>
-        </div>
-      </nav>
+      
+
+      <nav className="border-b border-gray-200 bg-white sticky top-0 z-50 shadow-sm">
+  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="flex h-16 items-center justify-between">
+      <div className="flex items-center gap-4">
+        <h1 className="text-xl font-bold text-foreground">Mi App</h1>
+      </div>
+      <div className="flex items-center gap-4">
+        <UserInfo />
+      </div>
+    </div>
+  </div>
+</nav>
 
       {session?.user ? (
         <div className="mx-auto max-w-7xl px-4 pb-8">
