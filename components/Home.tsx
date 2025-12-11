@@ -145,6 +145,11 @@ export default function Home() {
     return `${day}/${month}/${year}`;
   };
 
+  // Función auxiliar para verificar si el usuario es admin
+  const isAdmin = (role: string) => {
+    return role.toLowerCase() === "admin";
+  };
+
   return (
     <main className="min-h-screen bg-background">
       <nav className="border-b border-foreground/10 bg-card sticky top-0 z-50">
@@ -216,21 +221,29 @@ export default function Home() {
                     <span className="px-3 py-1 border-2 border-winered text-skyblue text-sm font-medium rounded-full">
                       {organization.role}
                     </span>
-                    <div>
-                      <button
-                        className="p-2 transform hover:scale-110 transition-colors"
-                        onClick={(e) => handleEdit(organization, e)}
-                      >
-                        <SquarePen size={28} className="text-skyblue" />
-                      </button>
-                      <button
-                        className="p-2 ml-2 text-red-600 hover:text-red-700"
-                        onClick={(e) => openDeleteModal(organization, e)}
-                        title="Eliminar organización"
-                      >
-                        <Trash2 size={28} className="text-winered" />
-                      </button>
-                    </div>
+                    {isAdmin(organization.role) && (
+                      <div>
+                        <button
+                          className="p-2 transform hover:scale-110 transition-colors"
+                          onClick={(e) => handleEdit(organization, e)}
+                        >
+                          <SquarePen
+                            size={28}
+                            className="text-skyblue cursor-pointer"
+                          />
+                        </button>
+                        <button
+                          className="p-2 ml-2 transform hover:scale-110 transition-colors "
+                          onClick={(e) => openDeleteModal(organization, e)}
+                          title="Eliminar organización"
+                        >
+                          <Trash2
+                            size={28}
+                            className="text-winered cursor-pointer"
+                          />
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   <div className="px-6 py-14 flex flex-col items-center text-center">
