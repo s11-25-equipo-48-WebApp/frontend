@@ -13,12 +13,6 @@ import {
   Users,
 } from 'lucide-react';
 
-// interface Editor {
-//   id: string;
-//   name: string;
-//   status: "active" | "wait" | "offline";
-// }
-
 export default function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
@@ -119,10 +113,10 @@ export default function Sidebar() {
 
   const menuItems = userRole
     ? allMenuItems.filter((item) => (item.roles as readonly string[]).includes(userRole))
-    : allMenuItems.filter((item) => (item.roles as readonly string[]).includes('editor')); // Fallback seguro: mostrar solo opciones de editor
+    : allMenuItems.filter((item) => (item.roles as readonly string[]).includes('editor'));
 
   return (
-    <aside className="w-full bg-card  rounded-[2.5rem] p-6 flex flex-col">
+    <aside className="sticky top-20 w-full bg-card rounded-[2.5rem] p-6 flex flex-col">
       {/* Navigation Menu */}
       <nav className="space-y-1 flex-1 mt-2">
         {menuItems.map((item) => {
@@ -133,22 +127,23 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 group ${isActive ? 'bg-[#BCDBB8] shadow-sm' : 'hover:bg-white/50'
-                }`}
+              className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 group ${
+                isActive ? 'bg-[#BCDBB8] shadow-sm' : 'hover:bg-white/50'
+              }`}
             >
               {/* Icon Container */}
               <div
-                className={`p-1 rounded ${isActive ? '' : ''} ${item.iconColor
-                  }`}
+                className={`p-1 rounded ${isActive ? '' : ''} ${item.iconColor}`}
               >
                 <Icon size={26} />
               </div>
 
               <span
-                className={`flex-1 text-sm font-semibold ${isActive
-                  ? 'text-gray-800'
-                  : 'text-gray-500 group-hover:text-gray-700'
-                  }`}
+                className={`flex-1 text-sm font-semibold ${
+                  isActive
+                    ? 'text-gray-800'
+                    : 'text-gray-500 group-hover:text-gray-700'
+                }`}
               >
                 {item.label}
               </span>
