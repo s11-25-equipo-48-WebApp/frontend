@@ -82,12 +82,6 @@ export default function PublicTestimonialsPage() {
     clearSelection();
   };
 
-  /*
-  const handleViewDetails = (id: string) => {
-    router.push(`/dashboard/testimonials/${id}`);
-  };
-  */
-
   // Loading state
   if (isLoading) {
     return (

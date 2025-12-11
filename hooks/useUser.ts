@@ -29,6 +29,7 @@ export const useUser = () => {
     const loadingToast = toast.loading("Actualizando perfil...");
     
     try {
+      // userService.updateUser ya maneja la extracción de data[0]
       const updatedUser = await userService.updateUser(userData);
       
       toast.update(loadingToast, {
