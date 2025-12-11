@@ -10,7 +10,7 @@ interface OrganizationModalProps {
   onClose: () => void;
   onSuccess: () => void;
   organization?: {
-    id: number;
+    id: string;
     name: string;
     description: string;
   } | null;

@@ -1,14 +1,14 @@
-import api from '@/services/config';
-import { useSession } from 'next-auth/react';
+import api from "@/services/config";
+import { useSession } from "next-auth/react";
 
 export default function useRefreshAccessTokenClient() {
   const { data: session, update } = useSession();
 
   const refresh = async (): Promise<string | null> => {
     try {
-      const { data } = await api.post('/auth/refresh');
+      const { data } = await api.post("/auth/refresh");
 
-      const newToken = data?.data.accessToken;   
+      const newToken = data?.data.accessToken;
       if (newToken) {
         try {
           await update?.({

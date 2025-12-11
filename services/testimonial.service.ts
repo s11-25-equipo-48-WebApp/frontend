@@ -54,6 +54,18 @@ export interface Testimonial {
   formattedDate: string;
   course?: string;
   editor: string;
+
+  // Campos adicionales (aliases / datos crudos de la API)
+  media_url?: string | null;
+  media_type?: "image" | "video" | "none";
+  image?: string | null;
+  email?: string | null;
+  category_id?: string | null;
+  created_at?: string | null;
+  received?: string | null;
+  author?: string | null;
+  body?: string;
+  status?: "pendiente" | "aprobado" | "rechazado";
 }
 
 interface PaginatedMeta {
@@ -73,6 +85,20 @@ interface APIResponse<T> {
   data: T;
 }
 
+/**
+ * Normaliza posibles valores de status (inglés/español) a los valores esperados en la UI (español).
+ */
+function normalizeStatus(
+  status?: string | null
+): "pendiente" | "aprobado" | "rechazado" | undefined {
+  if (!status) return undefined;
+  const s = String(status).trim().toLowerCase();
+  if (s === "approved" || s === "aprobado") return "aprobado";
+  if (s === "rejected" || s === "rechazado") return "rechazado";
+  if (s === "pending" || s === "pendiente") return "pendiente";
+  return undefined;
+}
+
 export const testimonialService = {
   getPending: async (
     organizationId: string,
@@ -89,9 +115,10 @@ export const testimonialService = {
       },
     });
 
-    // Acceso correcto a los datos: response.data.data.data
     const apiTestimonials = response.data.data.data || [];
-    return apiTestimonials.map(transformAPIToTestimonial);
+    return apiTestimonials
+      .map(transformAPIToTestimonial)
+      .map((t) => ({ ...t, status: normalizeStatus(t.status) || "pendiente" }));
   },
 
   getPublic: async (
@@ -116,7 +143,9 @@ export const testimonialService = {
     });
 
     const apiTestimonials = response.data.data.data || [];
-    return apiTestimonials.map(transformAPIToTestimonial);
+    return apiTestimonials
+      .map(transformAPIToTestimonial)
+      .map((t) => ({ ...t, status: normalizeStatus(t.status) || "pendiente" }));
   },
 
   getRecent: async (
@@ -124,7 +153,6 @@ export const testimonialService = {
     accessToken: string,
     limit: number = 5
   ): Promise<Testimonial[]> => {
-    // Usar directamente getPublic con el límite especificado
     const testimonials = await testimonialService.getPublic(
       organizationId,
       accessToken,
@@ -149,7 +177,8 @@ export const testimonialService = {
       }
     );
 
-    return transformAPIToTestimonial(response.data.data);
+    const t = transformAPIToTestimonial(response.data.data);
+    return { ...t, status: normalizeStatus(t.status) || "pendiente" };
   },
 
   deleteMany: async (
@@ -180,14 +209,18 @@ export const testimonialService = {
     });
   },
 
-  approve: async (
+  /**
+   * Cambiar el status de un testimonio usando el endpoint correcto
+   */
+  updateStatus: async (
     organizationId: string,
     id: string,
-    accessToken: string
+    accessToken: string,
+    status: "aprobado" | "rechazado" | "pendiente"
   ): Promise<Testimonial> => {
     const response = await api.patch<APIResponse<TestimonialAPIResponse>>(
-      `/organizations/${organizationId}/testimonios/${id}/approve`,
-      {},
+      `/organizations/${organizationId}/testimonios/${id}/status`,
+      { status },
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -195,17 +228,22 @@ export const testimonialService = {
       }
     );
 
-    return transformAPIToTestimonial(response.data.data);
+    const t = transformAPIToTestimonial(response.data.data);
+    return { ...t, status: normalizeStatus(t.status) || "pendiente" };
   },
 
-  reject: async (
+  /**
+   * Update a testimonial fields (partial update)
+   */
+  update: async (
     organizationId: string,
     id: string,
-    accessToken: string
+    accessToken: string,
+    payload: Partial<{ title: string; body: string; category_id: string }>
   ): Promise<Testimonial> => {
     const response = await api.patch<APIResponse<TestimonialAPIResponse>>(
-      `/organizations/${organizationId}/testimonios/${id}/reject`,
-      {},
+      `/organizations/${organizationId}/testimonios/${id}`,
+      payload,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -213,6 +251,7 @@ export const testimonialService = {
       }
     );
 
-    return transformAPIToTestimonial(response.data.data);
+    const t = transformAPIToTestimonial(response.data.data);
+    return { ...t, status: normalizeStatus(t.status) || "pendiente" };
   },
 };

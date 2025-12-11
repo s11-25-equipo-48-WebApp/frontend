@@ -23,6 +23,7 @@ export default function Page() {
   const [editTarget, setEditTarget] = useState<Category | null>(null);
 
   const { data: session } = useSession();
+  // currentOrganization es el ID (string | null)
   const organizationId = useStore((s) => s.currentOrganization);
   const refreshToken = useRefreshAccessTokenClient();
 
