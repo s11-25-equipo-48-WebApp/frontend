@@ -1,12 +1,13 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import React, { useEffect, useState } from "react";
-import Button from "@/components/Button";
-import CheckboxSuccess from "@/public/checkbox-succes.svg";
-import { Testimonial } from "@/services/testimonial.service";
-import { PencilLine } from "lucide-react";
-import { useCategories } from "@/hooks/useCategories";
+import Image from 'next/image';
+import React, { useEffect, useState } from 'react';
+import Button from '@/components/Button';
+import CheckboxSuccess from '@/public/checkbox-succes.svg';
+import { Testimonial } from '@/services/testimonial.service';
+import { PencilLine } from 'lucide-react';
+import { useCategories } from '@/hooks/useCategories';
+import EmbedTestimonial from '@/components/Modals/EmbedTestimonial';
 
 interface TestimonialContentProps {
   testimonial: Testimonial;
@@ -32,13 +33,13 @@ const getVideoId = (url: string): string | null => {
  */
 const normalizeStatusLocal = (
   status?: string | null
-): "pendiente" | "aprobado" | "rechazado" => {
-  if (!status) return "pendiente";
+): 'pendiente' | 'aprobado' | 'rechazado' => {
+  if (!status) return 'pendiente';
   const s = String(status).trim().toLowerCase();
-  if (s === "approved" || s === "aprobado") return "aprobado";
-  if (s === "rejected" || s === "rechazado") return "rechazado";
-  if (s === "pending" || s === "pendiente") return "pendiente";
-  return "pendiente";
+  if (s === 'approved' || s === 'aprobado') return 'aprobado';
+  if (s === 'rejected' || s === 'rechazado') return 'rechazado';
+  if (s === 'pending' || s === 'pendiente') return 'pendiente';
+  return 'pendiente';
 };
 
 export default function TestimonialContent({
@@ -51,30 +52,31 @@ export default function TestimonialContent({
   rejecting = false,
   saving = false,
 }: TestimonialContentProps) {
+  const [openModal, setOpenModal] = useState(false);
   // Soporte para media_type (snake) o mediaType (camel)
   const mediaType =
     (testimonial as any).media_type || (testimonial as any).mediaType;
   const mediaUrl =
     testimonial.media_url || testimonial.image || testimonial.media_url;
 
-  const isVideo = mediaType === "video" && mediaUrl;
-  const isImage = mediaType === "image" && mediaUrl;
-  const videoId = isVideo ? getVideoId(String(mediaUrl || "")) : null;
+  const isVideo = mediaType === 'video' && mediaUrl;
+  const isImage = mediaType === 'image' && mediaUrl;
+  const videoId = isVideo ? getVideoId(String(mediaUrl || '')) : null;
 
   const authorName =
     testimonial.author_name ||
     testimonial.author ||
     testimonial.editor ||
-    "Anónimo";
-  const title = testimonial.title || "Testimonio";
-  const body = testimonial.body || testimonial.content || "";
+    'Anónimo';
+  const title = testimonial.title || 'Testimonio';
+  const body = testimonial.body || testimonial.content || '';
   const createdDate = testimonial.created_at || testimonial.createdAt;
 
   // Normalizar status localmente (para evitar discrepancias idioma)
   const status = normalizeStatusLocal(testimonial.status);
   // Determinar qué botones mostrar según el status
-  const showApproveButton = status !== "aprobado";
-  const showRejectButton = status === "pendiente";
+  const showApproveButton = status !== 'aprobado';
+  const showRejectButton = status === 'pendiente';
 
   const [editableBody, setEditableBody] = useState<string>(body);
 
@@ -86,7 +88,7 @@ export default function TestimonialContent({
   const categoryName =
     categories.find((c: any) => c.id === testimonial.category_id)?.name ||
     testimonial.category_id ||
-    "Sin categoría";
+    'Sin categoría';
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -103,7 +105,7 @@ export default function TestimonialContent({
             <div className="w-full">
               <div
                 className="relative w-full aspect-video border-5 bg-gray-200 border-[#bf6a0270] rounded-lg overflow-hidden"
-                style={{ paddingBottom: "56.25%" }}
+                style={{ paddingBottom: '56.25%' }}
               >
                 <iframe
                   className="absolute top-0 left-0 w-full h-full"
@@ -132,9 +134,9 @@ export default function TestimonialContent({
                     <span>{categoryName}</span>
                   </p>
                   <p>
-                    <strong>Fecha de recepción:</strong>{" "}
+                    <strong>Fecha de recepción:</strong>{' '}
                     {createdDate
-                      ? new Date(createdDate).toLocaleDateString("es-AR")
+                      ? new Date(createdDate).toLocaleDateString('es-AR')
                       : testimonial.received}
                   </p>
                 </div>
@@ -175,9 +177,9 @@ export default function TestimonialContent({
                   <span>{categoryName}</span>
                 </p>
                 <p>
-                  <strong>Fecha de recepción:</strong>{" "}
+                  <strong>Fecha de recepción:</strong>{' '}
                   {createdDate
-                    ? new Date(createdDate).toLocaleDateString("es-AR")
+                    ? new Date(createdDate).toLocaleDateString('es-AR')
                     : testimonial.received}
                 </p>
               </div>
@@ -189,7 +191,7 @@ export default function TestimonialContent({
                       src={
                         testimonial.media_url ||
                         testimonial.image ||
-                        "/default-avatar.png"
+                        '/default-avatar.png'
                       }
                       alt={`Foto de ${authorName}`}
                       fill
@@ -236,9 +238,9 @@ export default function TestimonialContent({
                   <span>{categoryName}</span>
                 </p>
                 <p>
-                  <strong>Fecha de recepción:</strong>{" "}
+                  <strong>Fecha de recepción:</strong>{' '}
                   {createdDate
-                    ? new Date(createdDate).toLocaleDateString("es-AR")
+                    ? new Date(createdDate).toLocaleDateString('es-AR')
                     : testimonial.received}
                 </p>
               </div>
@@ -279,16 +281,25 @@ export default function TestimonialContent({
         {/* Botones según el status */}
         {isAdmin && (
           <div className="flex gap-5 ml-auto justify-end pt-8">
-            {showApproveButton && (
+            {showApproveButton ? (
               <Button
                 color="green"
                 size="fit"
                 onClick={onApprove}
                 disabled={approving || rejecting || saving}
               >
-                {approving ? "Aprobando..." : "Aprobar"}
+                {approving ? 'Aprobando...' : 'Aprobar'}
               </Button>
-            )}
+            ) :
+              (<Button
+                color="green"
+                size="fit"
+                onClick={() => setOpenModal(true)}
+                disabled={approving || rejecting || saving}
+              >
+                Obtener código de inserción
+              </Button>)}
+
             {showRejectButton && (
               <Button
                 color="red"
@@ -296,7 +307,7 @@ export default function TestimonialContent({
                 onClick={onReject}
                 disabled={approving || rejecting || saving}
               >
-                {rejecting ? "Rechazando..." : "Rechazar"}
+                {rejecting ? 'Rechazando...' : 'Rechazar'}
               </Button>
             )}
             <Button
@@ -305,11 +316,12 @@ export default function TestimonialContent({
               onClick={() => onSaveChanges?.(editableBody)}
               disabled={approving || rejecting || saving}
             >
-              {saving ? "Guardando..." : "Guardar Cambios"}
+              {saving ? 'Guardando...' : 'Guardar Cambios'}
             </Button>
           </div>
         )}
       </div>
+      <EmbedTestimonial isOpen={openModal} onClose={() => setOpenModal(false)} testimonialId={testimonial.id} />
     </div>
   );
 }
