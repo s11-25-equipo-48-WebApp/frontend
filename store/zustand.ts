@@ -3,7 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 // Interfaz para borradores de testimonios
 export interface TestimonyDraft {
-  id: string;
+  id: string | undefined;
   title: string;
   body: string;
   category_id: string;
@@ -26,12 +26,14 @@ export interface TestimonyDraft {
   savedAt: number; // timestamp
 }
 
+type SaveDraftInput = Omit<TestimonyDraft, 'savedAt'> & { id?: string };
+
 // Modo de ejemplo simple de uso de Zustand con persistencia en localStorage 
 interface store {
   currentOrganization: string | null;
   setCurrentOrganization: (_organizationId: string) => void;
   drafts: TestimonyDraft[];
-  saveDraft: (_draft: Omit<TestimonyDraft, 'id' | 'savedAt'>) => void;
+  saveDraft: (_draft: SaveDraftInput) => string;
   deleteDraft: (_id: string) => void;
   loadDraft: (_id: string) => TestimonyDraft | undefined;
 }
@@ -45,19 +47,39 @@ export const useStore = create<store>()(
       // Estado de borradores
       drafts: [],
 
-      // Guardar o actualizar borrador
+      // Guardar o actualizar borrador con id estable
       saveDraft: (draft) => {
-        const id = `draft-${Date.now()}`;
         const savedAt = Date.now();
-        const newDraft: TestimonyDraft = {
-          ...draft,
-          id,
-          savedAt,
-        };
 
-        set((state) => ({
-          drafts: [...state.drafts, newDraft],
-        }));
+        // Si viene con id, usarlo; si no, crear uno nuevo
+        const draftId = draft.id ?? `draft-${Date.now()}`;
+
+        // Buscar si ya existe un draft con ese id
+        const existingDraft = get().drafts.find((d) => d.id === draftId);
+
+        if (existingDraft) {
+          // Actualizar el draft existente
+          set((state) => ({
+            drafts: state.drafts.map((d) =>
+              d.id === draftId
+                ? { ...d, ...draft, id: draftId, savedAt }
+                : d
+            ),
+          }));
+        } else {
+          // Crear un nuevo draft
+          const newDraft: TestimonyDraft = {
+            ...draft,
+            id: draftId,
+            savedAt,
+          } as TestimonyDraft;
+
+          set((state) => ({
+            drafts: [...state.drafts, newDraft],
+          }));
+        }
+
+        return draftId;
       },
 
       // Eliminar borrador

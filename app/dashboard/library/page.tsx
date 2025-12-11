@@ -11,7 +11,8 @@ export default function LibraryPage() {
     const router = useRouter();
     const [deletingId, setDeletingId] = useState<string | null>(null);
 
-    const handleDelete = (id: string) => {
+    const handleDelete = (id: string | undefined) => {
+        if (!id) return;
         setDeletingId(id);
         deleteDraft(id);
         toast.success('Borrador eliminado');

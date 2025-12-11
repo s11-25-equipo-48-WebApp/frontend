@@ -31,6 +31,7 @@ export default function CreateTestimonyPage() {
     const [mediaType, setMediaType] = useState<MediaType>('none');
     const [videoFile, setVideoFile] = useState<File | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
+    const [loadedDraftId, setLoadedDraftId] = useState<string | null>(null);
     const { currentOrganization } = useStore();
     const { data: session } = useSession();
     const analyticsServices = useAnalyticsServices();
@@ -159,6 +160,7 @@ export default function CreateTestimonyPage() {
         (async () => {
             try {
                 const draft = JSON.parse(loadDraftData);
+                setLoadedDraftId(draft.id ?? null);
 
                 // Poblar formulario
                 methods.reset({
@@ -203,12 +205,13 @@ export default function CreateTestimonyPage() {
                     }
                 }
 
-                // Limpiar sessionStorage
+                // Limpiar sessionStorage inmediatamente después de cargar
                 sessionStorage.removeItem('loadDraft');
                 toast.success('Borrador cargado correctamente');
             } catch (error) {
                 console.error('Error al cargar borrador:', error);
                 toast.error('Error al cargar el borrador');
+                sessionStorage.removeItem('loadDraft');
             }
         })();
     }, [methods]);
@@ -409,7 +412,8 @@ export default function CreateTestimonyPage() {
                                         }
 
                                         // Guardar borrador (sin base64 pesado)
-                                        useStore.getState().saveDraft({
+                                        const draftId = useStore.getState().saveDraft({
+                                            id: loadedDraftId ?? undefined,
                                             title: formData.title,
                                             body: formData.body,
                                             category_id: formData.category_id,
@@ -420,6 +424,9 @@ export default function CreateTestimonyPage() {
                                             videoFile: videoFileData,
                                             imageFile: imageFileData,
                                         });
+
+                                        // Actualizar el id cargado para futuras guardas
+                                        setLoadedDraftId(draftId);
 
                                         toast.success('Borrador guardado en biblioteca');
                                     } catch (error) {
