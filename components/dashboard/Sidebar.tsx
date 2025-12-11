@@ -1,6 +1,8 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { useStore } from '@/store/zustand';
 import {
   LayoutDashboard,
   FileText,
@@ -19,14 +21,42 @@ import {
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const currentOrganization = useStore((s) => s.currentOrganization);
 
-  const menuItems = [
+  // Obtener el rol del usuario en la organización actual
+  const getUserRole = (): 'admin' | 'editor' | null => {
+    if (!session?.user?.organizations || !currentOrganization) {
+      return null;
+    }
+
+    const organizations = session.user.organizations as Array<{
+      id: string;
+      name: string;
+      role: string;
+    }>;
+
+    const currentOrg = organizations.find((org) => org.id === currentOrganization);
+    if (!currentOrg) {
+      return null;
+    }
+    if (currentOrg.role === 'admin' || currentOrg.role === 'editor') {
+      return currentOrg.role as 'admin' | 'editor';
+    }
+
+    return null;
+  };
+
+  const userRole = getUserRole();
+
+  const allMenuItems = [
     {
       href: '/dashboard',
       icon: LayoutDashboard,
       label: 'Dashboard',
       iconColor: 'text-purple-600',
       activeBg: 'bg-purple-100',
+      roles: ['admin', 'editor'] as const,
     },
     {
       href: '/dashboard/pending-reviews',
@@ -35,6 +65,7 @@ export default function Sidebar() {
       badge: 'NEW',
       iconColor: 'text-pink-500',
       activeBg: 'bg-pink-100',
+      roles: ['admin'] as const, 
     },
     {
       href: '/dashboard/testimonials/create',
@@ -42,6 +73,7 @@ export default function Sidebar() {
       label: 'Crear testimonio',
       iconColor: 'text-teal-500',
       activeBg: 'bg-teal-100',
+      roles: ['admin', 'editor'] as const, 
     },
     {
       href: '/dashboard/analytics',
@@ -49,6 +81,7 @@ export default function Sidebar() {
       label: 'Analytics',
       iconColor: 'text-red-500',
       iconBg: 'bg-red-50',
+      roles: ['admin'] as const, 
     },
     {
       href: '/dashboard/library',
@@ -56,6 +89,7 @@ export default function Sidebar() {
       label: 'Biblioteca multimedia',
       iconColor: 'text-blue-500',
       activeBg: 'bg-blue-100',
+      roles: ['admin', 'editor'] as const, 
     },
     {
       href: '/dashboard/categories',
@@ -63,6 +97,7 @@ export default function Sidebar() {
       label: 'Categorías',
       iconColor: 'text-blue-500',
       activeBg: 'bg-blue-100',
+      roles: ['admin'] as const,
     },
     {
       href: '/dashboard/editors',
@@ -70,6 +105,7 @@ export default function Sidebar() {
       label: 'Gestionar editores/permisos',
       iconColor: 'text-yellow-500',
       activeBg: 'bg-yellow-100',
+      roles: ['admin'] as const,
     },
     {
       href: '/',
@@ -77,21 +113,13 @@ export default function Sidebar() {
       label: 'Mis organizaciones',
       iconColor: 'text-winered',
       activeBg: 'bg-winered',
+      roles: ['admin', 'editor'] as const,
     },
   ];
 
-  // const getStatusColor = (status: Editor["status"]) => {
-  //   switch (status) {
-  //     case "active":
-  //       return "border-2 border-green-500 text-green-600"; // Ring style
-  //     case "wait":
-  //       return "border-2 border-yellow-500 text-yellow-600";
-  //     case "offline":
-  //       return "border-2 border-gray-300 text-gray-400";
-  //     default:
-  //       return "border-gray-300";
-  //   }
-  // };
+  const menuItems = userRole
+    ? allMenuItems.filter((item) => (item.roles as readonly string[]).includes(userRole))
+    : allMenuItems.filter((item) => (item.roles as readonly string[]).includes('editor')); // Fallback seguro: mostrar solo opciones de editor
 
   return (
     <aside className="w-full bg-card  rounded-[2.5rem] p-6 flex flex-col">
