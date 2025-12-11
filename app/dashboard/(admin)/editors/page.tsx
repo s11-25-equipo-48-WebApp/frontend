@@ -1,19 +1,19 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import Button from "@/components/Button";
+'use client';
+import React, { useEffect, useState } from 'react';
+import Button from '@/components/Button';
 import {
   RiSearchLine,
   RiUser3Line,
   RiDeleteBin6Line,
   RiLoader5Line,
-} from "react-icons/ri";
-import { useSession } from "next-auth/react";
-import { useStore } from "@/store/zustand";
-import api from "@/services/config";
-import { toast } from "react-toastify";
-import AddUserCard from "@/components/Modals/AddUserCard";
-import DeleteModal from "@/components/Modals/DeleteModal";
-import useRefreshAccessTokenClient from "@/hooks/useRefreshToken.client";
+} from 'react-icons/ri';
+import { useSession } from 'next-auth/react';
+import { useStore } from '@/store/zustand';
+import api from '@/services/config';
+import { toast } from 'react-toastify';
+import AddUserCard from '@/components/Modals/AddUserCard';
+import DeleteModal from '@/components/Modals/DeleteModal';
+import useRefreshAccessTokenClient from '@/hooks/useRefreshToken.client';
 
 type Editor = {
   id: string;
@@ -23,7 +23,7 @@ type Editor = {
 };
 
 export default function Page() {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [editors, setEditors] = useState<Editor[]>([]);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [showInvite, setShowInvite] = useState(false);
@@ -52,11 +52,11 @@ export default function Page() {
   // Fetch members con mejor debugging
   const fetchMembers = async () => {
     if (!organizationId) {
-      console.log("❌ No hay organizationId");
+      console.log('❌ No hay organizationId');
       return;
     }
 
-    console.log("🔍 Fetching members para org:", organizationId);
+    console.log('🔍 Fetching members para org:', organizationId);
     setIsLoadingMembers(true);
 
     try {
@@ -64,7 +64,7 @@ export default function Page() {
       const tokenToUse =
         newToken ?? (session?.user?.accessToken as string | undefined);
 
-      console.log("🔑 Token disponible:", !!tokenToUse);
+      console.log('🔑 Token disponible:', !!tokenToUse);
 
       const { data, status } = await api.get(
         `/organization/${organizationId}/members`,
@@ -75,34 +75,34 @@ export default function Page() {
         }
       );
 
-      console.log("✅ Response status:", status);
-      console.log("📦 Response data:", data);
-      console.log("📊 Data type:", typeof data, Array.isArray(data));
+      console.log('✅ Response status:', status);
+      console.log('📦 Response data:', data);
+      console.log('📊 Data type:', typeof data, Array.isArray(data));
 
       // Intentar diferentes estructuras de respuesta
       let membersList: Editor[] = [];
 
       if (Array.isArray(data)) {
-        console.log("✓ Data es array directo");
+        console.log('✓ Data es array directo');
         membersList = data;
       } else if (data && Array.isArray(data.items)) {
-        console.log("✓ Data.items es array");
+        console.log('✓ Data.items es array');
         membersList = data.items;
       } else if (data && Array.isArray(data.members)) {
-        console.log("✓ Data.members es array");
+        console.log('✓ Data.members es array');
         membersList = data.members;
       } else if (data && Array.isArray(data.data)) {
-        console.log("✓ Data.data es array");
+        console.log('✓ Data.data es array');
         membersList = data.data;
       } else {
         console.warn(
-          "⚠️ Estructura de datos no reconocida:",
+          '⚠️ Estructura de datos no reconocida:',
           Object.keys(data || {})
         );
         membersList = [];
       }
 
-      console.log("👥 Members encontrados:", membersList.length);
+      console.log('👥 Members encontrados:', membersList.length);
       setEditors(membersList);
 
       // Ensure current user is not selected
@@ -110,20 +110,19 @@ export default function Page() {
         setSelected((s) => ({ ...s, [currentUserId]: false }));
       }
     } catch (error: any) {
-      console.error("❌ Error fetching members:", error);
-      console.error("📍 Error response:", error.response?.data);
-      console.error("🔢 Error status:", error.response?.status);
+      console.error('❌ Error fetching members:', error);
+      console.error('📍 Error response:', error.response?.data);
+      console.error('🔢 Error status:', error.response?.status);
 
       if (error.response?.status === 401) {
-        toast.error("Sesión expirada. Por favor inicia sesión nuevamente.");
+        toast.error('Sesión expirada. Por favor inicia sesión nuevamente.');
       } else if (error.response?.status === 403) {
-        toast.error("No tienes permisos para ver los miembros");
+        toast.error('No tienes permisos para ver los miembros');
       } else if (error.response?.status === 404) {
-        toast.error("Organización no encontrada");
+        toast.error('Organización no encontrada');
       } else {
         toast.error(
-          `Error cargando miembros: ${
-            error.response?.data?.message || error.message
+          `Error cargando miembros: ${error.response?.data?.message || error.message
           }`
         );
       }
@@ -134,22 +133,22 @@ export default function Page() {
 
   useEffect(() => {
     if (organizationId) {
-      console.log("🚀 Iniciando fetch de members");
+      console.log('🚀 Iniciando fetch de members');
       fetchMembers();
     } else {
-      console.log("⏳ Esperando organizationId...");
+      console.log('⏳ Esperando organizationId...');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [organizationId]);
 
   const handleDelete = async (ids: string[]) => {
     if (!organizationId) {
-      toast.error("Organization ID no disponible");
+      toast.error('Organization ID no disponible');
       return;
     }
 
     if (currentUserId && ids.includes(currentUserId)) {
-      toast.error("No puedes eliminar tu propia cuenta");
+      toast.error('No puedes eliminar tu propia cuenta');
       return;
     }
 
@@ -172,8 +171,8 @@ export default function Page() {
       setSelected({});
       refreshToken();
     } catch (error: any) {
-      console.error("❌ Error eliminando miembros:", error);
-      console.error("📍 Error response:", error.response?.data);
+      console.error('❌ Error eliminando miembros:', error);
+      console.error('📍 Error response:', error.response?.data);
       toast.error(
         `Error al eliminar: ${error.response?.data?.message || error.message}`
       );
@@ -191,11 +190,9 @@ export default function Page() {
 
   const handleInviteEditors = async (emails: string[]) => {
     if (!organizationId) {
-      toast.error("Organization ID no disponible");
+      toast.error('Organization ID no disponible');
       return;
     }
-
-
 
     let successCount = 0;
     let errorCount = 0;
@@ -207,20 +204,20 @@ export default function Page() {
 
       for (const email of emails) {
         try {
-          console.log("📨 Enviando invitación a:", email);
+          console.log('📨 Enviando invitación a:', email);
 
           const response = await api.post(
             `/organization/${organizationId}/members`,
-            { email, role: "editor" },
+            { email },
             {
               headers: {
                 Authorization: tokenToUse ? `Bearer ${tokenToUse}` : undefined,
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
               },
             }
           );
 
-          console.log("✅ Invitación exitosa:", response.data);
+          console.log('✅ Invitación exitosa:', response.data);
           successCount++;
         } catch (error: any) {
           errorCount++;
@@ -240,11 +237,11 @@ export default function Page() {
       }
 
       if (errorCount > 0 && successCount === 0) {
-        toast.error("No se pudo enviar ninguna invitación");
+        toast.error('No se pudo enviar ninguna invitación');
       }
     } catch (error: any) {
-      console.error("❌ Error general invitando editores:", error);
-      toast.error("Error al procesar invitaciones");
+      console.error('❌ Error general invitando editores:', error);
+      toast.error('Error al procesar invitaciones');
     }
   };
 
@@ -288,16 +285,14 @@ export default function Page() {
         aria-label="Eliminar seleccionados"
         name="eliminar miembros seleccionados"
         onClick={() => setShowDelete(true)}
-        className={`bg-[#FAC5C3] text-white rounded-full h-16 p-4 flex items-center justify-center shadow-md cursor-pointer transition-all ${
-          anySelected ? "px-3 flex" : "w-10 hidden"
-        }`}
+        className={`bg-[#FAC5C3] text-white rounded-full h-16 p-4 flex items-center justify-center shadow-md cursor-pointer transition-all ${anySelected ? 'px-3 flex' : 'w-10 hidden'
+          }`}
         disabled={!anySelected}
         title={
           anySelected
-            ? `${selectedIds.length} seleccionad${
-                selectedIds.length > 1 ? "os" : "o"
-              }`
-            : "Selecciona miembros para eliminar"
+            ? `${selectedIds.length} seleccionad${selectedIds.length > 1 ? 'os' : 'o'
+            }`
+            : 'Selecciona miembros para eliminar'
         }
       >
         <RiDeleteBin6Line size={28} />
@@ -334,9 +329,8 @@ export default function Page() {
               return (
                 <div
                   key={editor.id}
-                  className={`min-w-[720px] grid grid-cols-12 items-center gap-4 rounded-xl p-4 shadow-sm transition-colors ${
-                    isSel ? "bg-[#FAC5C3]" : "bg-white dark:bg-slate-900"
-                  }`}
+                  className={`min-w-[720px] grid grid-cols-12 items-center gap-4 rounded-xl p-4 shadow-sm transition-colors ${isSel ? 'bg-[#FAC5C3]' : 'bg-white dark:bg-slate-900'
+                    }`}
                 >
                   <div className="col-span-1 flex items-center justify-center">
                     <input
@@ -352,7 +346,7 @@ export default function Page() {
                       }
                       title={
                         editor.id === currentUserId
-                          ? "No puedes seleccionar tu propia cuenta"
+                          ? 'No puedes seleccionar tu propia cuenta'
                           : undefined
                       }
                     />
@@ -360,12 +354,11 @@ export default function Page() {
 
                   <div className="col-span-4 flex items-center gap-4">
                     <div
-                      className={`w-10 h-10 rounded-lg ring-1 bg-yellow-500 text-yellow-800 flex items-center justify-center shrink-0 ${
-                        isSel ? "bg-transparent text-white" : ""
-                      }`}
+                      className={`w-10 h-10 rounded-lg ring-1 bg-yellow-500 text-yellow-800 flex items-center justify-center shrink-0 ${isSel ? 'bg-transparent text-white' : ''
+                        }`}
                     >
                       <RiUser3Line
-                        className={isSel ? "text-white" : ""}
+                        className={isSel ? 'text-white' : ''}
                         size={24}
                       />
                     </div>
@@ -422,7 +415,7 @@ export default function Page() {
         isLoading={isDeleting}
         title={
           deleteTarget
-            ? "Eliminar miembro"
+            ? 'Eliminar miembro'
             : `Eliminar ${selectedIds.length} miembro(s)`
         }
         message={
