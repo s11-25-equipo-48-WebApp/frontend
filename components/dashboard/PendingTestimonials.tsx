@@ -30,14 +30,14 @@ export default function PendingTestimonials() {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-200">
-              <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">
-                Cliente/Curso
+        <table className="min-w-full text-left border-collapse text-center">
+          <thead className="text-sm font-bold text-gray-900 border-b border-gray-100">
+            <tr >
+              <th scope="col" className="py-6 px-4 text-center">
+                Autor / Título
               </th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">
-                Recibido
+              <th scope="col" className="py-6 px-4 text-center">
+                Fecha de creación
               </th>
               <th className="text-right py-3 px-4"></th>
             </tr>
@@ -75,16 +75,15 @@ export default function PendingTestimonials() {
                   key={testimonial.id}
                   className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                 >
-                  <td className="py-4 px-4">
-                    <p className="font-medium text-gray-800">
-                      {testimonial.client}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {testimonial.course}
+                  <td className="py-6 px-4 whitespace-nowrap">
+                    <p className="text-base text-gray-700">
+                      {testimonial.author_name} / {testimonial.title}
                     </p>
                   </td>
-                  <td className="py-4 px-4 text-gray-600">
-                    {testimonial.received}
+                  <td className="py-6 px-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-500">
+                      {testimonial.formattedDate}
+                    </div>
                   </td>
                   <td className="py-4 px-4">
                     <Button variant="action" color="orange" className="ml-auto">

@@ -5,21 +5,21 @@ import { testimonialService } from "@/services/testimonial.service";
 
 export const useTestimonialById = (id: string) => {
   const { data: session } = useSession();
-  const { currentOrganization } = useStore();
+  const organizationId = useStore((s) => s.currentOrganization);
 
   const {
     data: testimonial,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["testimonials", "byId", currentOrganization, id],
+    queryKey: ["testimonials", "byId", organizationId, id],
     queryFn: () =>
       testimonialService.getById(
-        currentOrganization!,
+        organizationId!,
         id,
         session?.user?.accessToken!
       ),
-    enabled: !!currentOrganization && !!session?.user?.accessToken && !!id,
+    enabled: !!organizationId && !!session?.user?.accessToken && !!id,
     staleTime: 5 * 60 * 1000, // 5 minutos
   });
 
@@ -27,6 +27,6 @@ export const useTestimonialById = (id: string) => {
     testimonial,
     isLoading,
     error,
-    hasOrganization: !!currentOrganization,
+    hasOrganization: !!organizationId,
   };
 };

@@ -1,8 +1,9 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useForm, FormProvider } from 'react-hook-form';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { usePublicTestimonials } from '@/hooks/usePublicTestimonials';
+import { useCategories } from '@/hooks/useCategories';
 import { FilterType, SortType } from '@/utils/testimonial.utils';
 import TestimonialFilters from '@/components/dashboard/TestimonialFilters';
 import TestimonialTable from '@/components/dashboard/TestimonialTable';
@@ -30,9 +31,37 @@ export default function PublicTestimonialsPage() {
     filterBy,
     sortBy
   );
+  
+  // Cargar categorías
+  const { data: categories = [], isLoading: isLoadingCategories } = useCategories();
+  
   const deleteTestimonials = useDeleteTestimonials();
   const { selectedIds, selectAll, hasSelected, toggleSelectAll, toggleSelect, clearSelection } =
     useTestimonialSelection(testimonials);
+
+  // Calcular si hay filtros u ordenamiento activos
+  const hasActiveFilters = useMemo(() => {
+    return filterBy !== '' || sortBy !== '';
+  }, [filterBy, sortBy]);
+
+  // Calcular el texto del filtro activo
+  const getFilterLabel = useMemo(() => {
+    if (!filterBy) return null;
+
+    if (filterBy.startsWith('category:')) {
+      const categoryId = filterBy.replace('category:', '');
+      const category = categories.find(c => c.id === categoryId);
+      return category ? `Categoría: ${category.name}` : 'Categoría seleccionada';
+    }
+
+    const filterLabels: Record<string, string> = {
+      'video': 'Videos',
+      'image': 'Imágenes',
+      'text': 'Textos',
+    };
+
+    return filterLabels[filterBy] || 'Filtro activo';
+  }, [filterBy, categories]);
 
   const handleDeleteClick = () => {
     setIsDeleteModalOpen(true);
@@ -53,9 +82,11 @@ export default function PublicTestimonialsPage() {
     clearSelection();
   };
 
+  /*
   const handleViewDetails = (id: string) => {
     router.push(`/dashboard/testimonials/${id}`);
   };
+  */
 
   // Loading state
   if (isLoading) {
@@ -100,12 +131,21 @@ export default function PublicTestimonialsPage() {
               isDeleting={deleteTestimonials.isPending}
               onDelete={handleDeleteClick}
               onFilterChange={handleFilterChange}
+              categories={categories}
+              isLoadingCategories={isLoadingCategories}
             />
 
-            {/* Contador de resultados filtrados */}
-            {filterBy && (
-              <div className="text-sm text-gray-600">
-                Mostrando {testimonials.length} de {rawTestimonials.length} testimonios
+            {/* Contador de resultados - siempre visible cuando hay filtros activos */}
+            {hasActiveFilters && (
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <span className="font-medium">
+                  Mostrando {testimonials.length} de {rawTestimonials.length} testimonios
+                </span>
+                {getFilterLabel && (
+                  <span className="text-gray-500">
+                    • Filtro: {getFilterLabel}
+                  </span>
+                )}
               </div>
             )}
 
@@ -114,20 +154,30 @@ export default function PublicTestimonialsPage() {
               testimonials={testimonials}
               selectedIds={selectedIds}
               selectAll={selectAll}
-              filterBy={filterBy}
               onToggleSelectAll={toggleSelectAll}
               onToggleSelect={toggleSelect}
-              onViewDetails={handleViewDetails}
             />
 
             {/* Mensaje si no hay testimonios */}
             {testimonials.length === 0 && !isLoading && (
               <div className="text-center py-12">
                 <p className="text-gray-500">
-                  {filterBy
+                  {hasActiveFilters
                     ? 'No se encontraron testimonios con los filtros aplicados'
                     : 'No hay testimonios publicados aún'}
                 </p>
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      methods.reset();
+                      clearSelection();
+                    }}
+                    className="mt-4 text-blue-600 hover:text-blue-700 underline cursor-pointer"
+                  >
+                    Limpiar filtros y ver todos
+                  </button>
+                )}
               </div>
             )}
           </form>

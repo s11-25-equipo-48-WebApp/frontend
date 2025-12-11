@@ -157,6 +157,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.accessToken = session.user.accessToken || token.accessToken;
       }
 
+      console.log(token.accessToken);
+
       return token;
     },
     session(params) {

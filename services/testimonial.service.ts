@@ -1,108 +1,114 @@
 import api from "@/services/config";
 import { transformAPIToTestimonial } from "@/utils/testimonial.utils";
-import { mockTestimonialsData } from "@/data/mocks/mockTestimonialsData";
 
-// Variable de entorno para activar/desactivar mocks
-const USE_MOCKS = process.env.NEXT_PUBLIC_USE_MOCKS === "true";
+export interface Tag {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+}
 
 export interface TestimonialAPIResponse {
   id: string;
   title: string;
   body: string;
-  category_id: string;
-  tags: string[];
-  media_url: string;
+  category: {
+    id: string;
+    name: string;
+    createdAt: string;
+  } | null;
+  tags: Tag[];
+  media_url: string | null;
   media_type: "image" | "video" | "none";
-  author: string;
-  email: string;
-  status?: "pendiente" | "aprobado" | "rechazado";
+  author_name: string;
+  author_email: string;
+  created_by_user_id: string | null;
+  created_by_user: {
+    id: string;
+    email: string;
+    name: string;
+    last_name: string;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+    deactivated_at: string | null;
+    password_hash?: string;
+  } | null;
+  approved_by: string | null;
+  approved_at: string | null;
+  status: "pendiente" | "aprobado" | "rechazado";
   created_at: string;
   updated_at: string;
+  deleted_at: string | null;
 }
 
 export interface Testimonial {
   id: string;
+  author_name: string;
   title: string;
-  body: string;
-  category_id: string;
-  tags?: string[];
-  media_url?: string;
-  media_type?: "image" | "video" | "none";
-  author_name?: string;
-  email?: string;
-  status?: "pendiente" | "aprobado" | "rechazado";
-  created_at?: string;
-  updated_at?: string;
-  // Campos legacy para compatibilidad
-  client?: string;
+  categoryName: string;
+  categoryId?: string;
+  mediaType: "image" | "video" | "none";
+  content: string;
+  createdAt: string;
+  formattedDate: string;
   course?: string;
-  received?: string;
-  editor?: string;
-  content?: string;
-  image?: string;
-  author?: string;
-  role?: string;
-  createdAt?: string;
+  editor: string;
+
+  // Campos adicionales (aliases / datos crudos de la API)
+  media_url?: string | null;
+  media_type?: "image" | "video" | "none";
+  image?: string | null;
+  email?: string | null;
+  category_id?: string | null;
+  created_at?: string | null;
+  received?: string | null;
+  author?: string | null;
+  body?: string;
+  status?: "pendiente" | "aprobado" | "rechazado";
 }
 
-export interface CreateTestimonioDto {
-  title: string;
-  body: string;
-  category_id: string;
-  email: string;
-  author_name?: string;
-  tags?: string[];
-  media_url?: string;
-  media_type?: "image" | "video" | "none";
+interface PaginatedMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 interface PaginatedResponse<T> {
   data: T[];
-  total: number;
-  page: number;
-  limit: number;
+  meta: PaginatedMeta;
+}
+
+interface APIResponse<T> {
+  success: boolean;
+  data: T;
+}
+
+/**
+ * Normaliza posibles valores de status (inglés/español) a los valores esperados en la UI (español).
+ */
+function normalizeStatus(
+  status?: string | null
+): "pendiente" | "aprobado" | "rechazado" | undefined {
+  if (!status) return undefined;
+  const s = String(status).trim().toLowerCase();
+  if (s === "approved" || s === "aprobado") return "aprobado";
+  if (s === "rejected" || s === "rechazado") return "rechazado";
+  if (s === "pending" || s === "pendiente") return "pendiente";
+  return undefined;
 }
 
 export const testimonialService = {
-  create: async (
-    organizationId: string,
-    data: CreateTestimonioDto,
-    accessToken: string,
-    isAdmin: boolean = false
-  ): Promise<Testimonial> => {
-    const payload = {
-      ...data,
-      // Si es admin, el estado es aprobado automáticamente
-      ...(isAdmin && { status: "aprobado" }),
-    };
-
-    const response = await api.post<TestimonialAPIResponse>(
-      `/organizations/${organizationId}/testimonios`,
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-
-    return transformAPIToTestimonial(response.data);
-  },
-
   getPending: async (
     organizationId: string,
     accessToken: string,
     page: number = 1,
     limit: number = 50
   ): Promise<Testimonial[]> => {
-    if (USE_MOCKS) {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      return mockTestimonialsData.map(transformAPIToTestimonial);
-    }
-
-    const response = await api.get<{
-      data: PaginatedResponse<TestimonialAPIResponse>;
-    }>(`/organizations/${organizationId}/testimonios/pending`, {
+    const response = await api.get<
+      APIResponse<PaginatedResponse<TestimonialAPIResponse>>
+    >(`/organizations/${organizationId}/testimonios/pending`, {
       params: { page, limit },
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -110,10 +116,11 @@ export const testimonialService = {
     });
 
     const apiTestimonials = response.data.data.data || [];
-    return apiTestimonials.map(transformAPIToTestimonial);
+    return apiTestimonials
+      .map(transformAPIToTestimonial)
+      .map((t) => ({ ...t, status: normalizeStatus(t.status) }));
   },
 
-  // ✅ NUEVO: Obtener testimonios públicos/publicados
   getPublic: async (
     organizationId: string,
     accessToken: string,
@@ -122,58 +129,38 @@ export const testimonialService = {
     categoryId?: string,
     tagId?: string
   ): Promise<Testimonial[]> => {
-    if (USE_MOCKS) {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      // Filtrar solo los aprobados para simular testimonios públicos
-      return mockTestimonialsData
-        .filter((t) => t.status === "aprobado")
-        .map(transformAPIToTestimonial);
-    }
-
     const params: any = { page, limit };
     if (categoryId) params.category_id = categoryId;
     if (tagId) params.tag_id = tagId;
 
-    const response = await api.get<PaginatedResponse<TestimonialAPIResponse>>(
-      `/api/v1/organizations/${organizationId}/testimonios/public`,
-      {
-        params,
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    const response = await api.get<
+      APIResponse<PaginatedResponse<TestimonialAPIResponse>>
+    >(`/organizations/${organizationId}/testimonios/public`, {
+      params,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
-    const apiTestimonials = response.data.data || [];
-    return apiTestimonials.map(transformAPIToTestimonial);
+    const apiTestimonials = response.data.data.data || [];
+    return apiTestimonials
+      .map(transformAPIToTestimonial)
+      .map((t) => ({ ...t, status: normalizeStatus(t.status) }));
   },
 
-  // ✅ NUEVO: Obtener testimonios recientes (últimos publicados)
   getRecent: async (
     organizationId: string,
     accessToken: string,
     limit: number = 5
   ): Promise<Testimonial[]> => {
-    // Obtener testimonios públicos y tomar solo los más recientes
-    const allPublic = await testimonialService.getPublic(
+    const testimonials = await testimonialService.getPublic(
       organizationId,
       accessToken,
       1,
       limit
     );
 
-    // Ordenar por fecha más reciente primero
-    return allPublic
-      .sort((a, b) => {
-        const dateA = new Date(
-          (a.received ?? "").split("/").reverse().join("-")
-        );
-        const dateB = new Date(
-          (b.received ?? "").split("/").reverse().join("-")
-        );
-        return dateB.getTime() - dateA.getTime();
-      })
-      .slice(0, limit);
+    return testimonials;
   },
 
   getById: async (
@@ -181,7 +168,7 @@ export const testimonialService = {
     id: string,
     accessToken: string
   ): Promise<Testimonial> => {
-    const response = await api.get<TestimonialAPIResponse>(
+    const response = await api.get<APIResponse<TestimonialAPIResponse>>(
       `/organizations/${organizationId}/testimonios/${id}`,
       {
         headers: {
@@ -190,7 +177,8 @@ export const testimonialService = {
       }
     );
 
-    return transformAPIToTestimonial(response.data);
+    const t = transformAPIToTestimonial(response.data.data);
+    return { ...t, status: normalizeStatus(t.status) };
   },
 
   deleteMany: async (
@@ -221,14 +209,18 @@ export const testimonialService = {
     });
   },
 
-  approve: async (
+  /**
+   * Cambiar el status de un testimonio usando el endpoint correcto
+   */
+  updateStatus: async (
     organizationId: string,
     id: string,
-    accessToken: string
+    accessToken: string,
+    status: "aprobado" | "rechazado" | "pendiente"
   ): Promise<Testimonial> => {
-    const response = await api.patch<TestimonialAPIResponse>(
-      `/organizations/${organizationId}/testimonios/${id}/approve`,
-      {},
+    const response = await api.patch<APIResponse<TestimonialAPIResponse>>(
+      `/organizations/${organizationId}/testimonios/${id}/status`,
+      { status },
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -236,17 +228,22 @@ export const testimonialService = {
       }
     );
 
-    return transformAPIToTestimonial(response.data);
+    const t = transformAPIToTestimonial(response.data.data);
+    return { ...t, status: normalizeStatus(t.status) };
   },
 
-  reject: async (
+  /**
+   * Update a testimonial fields (partial update)
+   */
+  update: async (
     organizationId: string,
     id: string,
-    accessToken: string
+    accessToken: string,
+    payload: Partial<{ title: string; body: string; category_id: string }>
   ): Promise<Testimonial> => {
-    const response = await api.patch<TestimonialAPIResponse>(
-      `/organizations/${organizationId}/testimonios/${id}/reject`,
-      {},
+    const response = await api.patch<APIResponse<TestimonialAPIResponse>>(
+      `/organizations/${organizationId}/testimonios/${id}`,
+      payload,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -254,6 +251,7 @@ export const testimonialService = {
       }
     );
 
-    return transformAPIToTestimonial(response.data);
+    const t = transformAPIToTestimonial(response.data.data);
+    return { ...t, status: normalizeStatus(t.status) };
   },
 };

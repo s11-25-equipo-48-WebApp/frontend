@@ -21,8 +21,6 @@ export function useCategories() {
                     'Authorization': `Bearer ${session?.user?.accessToken}`
                 }
             });
-            console.log(response);
-            
             return response.data;
         },
         enabled: !!currentOrganization && !!session?.user?.accessToken,

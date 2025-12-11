@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 // Interfaz para borradores de testimonios
 export interface TestimonyDraft {
@@ -10,7 +10,7 @@ export interface TestimonyDraft {
   email: string;
   author?: string;
   tags?: string[];
-  mediaType: 'none' | 'video' | 'image';
+  mediaType: "none" | "video" | "image";
   videoFile?: {
     name: string;
     type: string;
@@ -26,12 +26,12 @@ export interface TestimonyDraft {
   savedAt: number; // timestamp
 }
 
-// Modo de ejemplo simple de uso de Zustand con persistencia en localStorage 
+// Modo de ejemplo simple de uso de Zustand con persistencia en localStorage
 interface store {
   currentOrganization: string | null;
-  setCurrentOrganization: (_organizationId: string) => void;
+  setCurrentOrganization: (_organization: string | null) => void;
   drafts: TestimonyDraft[];
-  saveDraft: (_draft: Omit<TestimonyDraft, 'id' | 'savedAt'>) => void;
+  saveDraft: (_draft: Omit<TestimonyDraft, "id" | "savedAt">) => void;
   deleteDraft: (_id: string) => void;
   loadDraft: (_id: string) => TestimonyDraft | undefined;
 }
@@ -40,7 +40,9 @@ export const useStore = create<store>()(
   persist(
     (set, get) => ({
       currentOrganization: null,
-      setCurrentOrganization: (organizationId: string) => set({ currentOrganization: organizationId }),
+      // Ahora aceptamos y guardamos el ID (string) o null
+      setCurrentOrganization: (organizationId: string | null) =>
+        set({ currentOrganization: organizationId }),
 
       // Estado de borradores
       drafts: [],
@@ -67,14 +69,18 @@ export const useStore = create<store>()(
         if (draftToDelete) {
           try {
             if (draftToDelete.videoFile && draftToDelete.videoFile.id) {
-              import('@/utils/indexedDB').then((m) => m.deleteFile(draftToDelete.videoFile!.id)).catch(() => {});
+              import("@/utils/indexedDB")
+                .then((m) => m.deleteFile(draftToDelete.videoFile!.id))
+                .catch(() => {});
             }
             if (draftToDelete.imageFile && draftToDelete.imageFile.id) {
-              import('@/utils/indexedDB').then((m) => m.deleteFile(draftToDelete.imageFile!.id)).catch(() => {});
+              import("@/utils/indexedDB")
+                .then((m) => m.deleteFile(draftToDelete.imageFile!.id))
+                .catch(() => {});
             }
           } catch (e) {
             // no bloquear el borrado por errores en IndexedDB
-            console.warn('Error intentando borrar archivos de IndexedDB', e);
+            console.warn("Error intentando borrar archivos de IndexedDB", e);
           }
         }
 
@@ -89,8 +95,8 @@ export const useStore = create<store>()(
       },
     }),
     {
-      name: 'testimony-store',
-      storage: createJSONStorage(() => localStorage)
+      name: "testimony-store",
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );

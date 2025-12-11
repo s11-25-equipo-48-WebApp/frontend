@@ -14,6 +14,7 @@ import { uploadToCloudinary } from '@/hooks/useCloudinary';
 import { useCategories } from '@/hooks/useCategories';
 import { useSession } from 'next-auth/react';
 import { useStore } from '@/store/zustand';
+import { useAnalyticsServices } from '@/services/analytics.services';
 
 type MediaType = 'none' | 'video' | 'image';
 
@@ -32,6 +33,7 @@ export default function CreateTestimonyPage() {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const { currentOrganization } = useStore();
     const { data: session } = useSession();
+    const analyticsServices = useAnalyticsServices();
     // Obtener categorías desde la API
     const { data: categories, isLoading: categoriesLoading } = useCategories();
 
@@ -105,6 +107,12 @@ export default function CreateTestimonyPage() {
             const response = await api.post(`/organizations/${currentOrganization}/testimonios`, payload, {
                 headers: {
                     'Authorization': `Bearer ${session?.user?.accessToken}`
+                }
+            });
+            await analyticsServices.createEvent({
+                metadata: {
+                    event_type: session?.user?.role === 'admin' ? 'approval' : 'submission',
+                    testimonio_id: response.data.data.id
                 }
             });
             return response.data;

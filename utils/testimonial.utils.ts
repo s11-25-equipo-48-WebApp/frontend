@@ -3,16 +3,18 @@ import {
   TestimonialAPIResponse,
 } from "@/services/testimonial.service";
 
-// ============================================
 // TIPOS DE FILTROS Y ORDENAMIENTO
-// ============================================
 
-export type FilterType = "" | "video" | "text" | "positive" | "negative";
-export type SortType = "" | "date-desc" | "date-asc" | "client" | "editor";
+export type FilterType = "" | "video" | "image" | "text" | `category:${string}`;
+export type SortType =
+  | ""
+  | "date-desc"
+  | "date-asc"
+  | "titulo"
+  | "medio"
+  | "categoria";
 
-// ============================================
 // TRANSFORMADORES (API → UI)
-// ============================================
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -36,55 +38,38 @@ const formatDate = (dateString: string): string => {
   return `${day} ${month} ${year}`;
 };
 
-const getContentType = (apiData: TestimonialAPIResponse): string => {
-  const mediaType =
-    apiData.media_type === "video"
-      ? "Video"
-      : apiData.media_type === "image"
-      ? "Imagen"
-      : "Texto";
-
-  const sentiment = apiData.tags.find((tag) =>
-    ["positivo", "negativo", "muy positivo", "neutral"].includes(
-      tag.toLowerCase()
-    )
-  );
-
-  return sentiment ? `${mediaType} / ${sentiment}` : mediaType;
-};
-
 /**
  * Transforma un testimonio de la API al formato de la UI
+ * Maneja casos donde los campos pueden ser null o undefined
  */
 export const transformAPIToTestimonial = (
-  apiData: TestimonialAPIResponse
+  apiTestimonial: TestimonialAPIResponse
 ): Testimonial => {
   return {
-    id: apiData.id,
-    title: apiData.title,
-    body: apiData.body,
-    category_id: apiData.category_id,
-    tags: apiData.tags,
-    media_url: apiData.media_url,
-    media_type: apiData.media_type,
-    author_name: apiData.author,
-    email: apiData.email,
-    status: apiData.status,
-    created_at: apiData.created_at,
-    updated_at: apiData.updated_at,
-    // Campos legacy para compatibilidad
-    client: apiData.author,
-    course: apiData.title,
-    received: formatDate(apiData.created_at),
-    editor: "Sin asignar",
-    content: getContentType(apiData),
-    author: apiData.author,
+    id: apiTestimonial.id,
+    author_name: apiTestimonial.author_name || "Anónimo",
+    title: apiTestimonial.title || "Sin título",
+    categoryName: apiTestimonial.category?.name || "General",
+    categoryId: apiTestimonial.category?.id || "",
+    mediaType: apiTestimonial.media_type || "none",
+    content: apiTestimonial.body || "",
+    createdAt: apiTestimonial.created_at,
+    formattedDate: formatDate(apiTestimonial.created_at),
+    editor: apiTestimonial.created_by_user?.name || "Sistema",
+    // Campos adicionales para compatibilidad con componentes existentes
+    media_url: apiTestimonial.media_url,
+    media_type: apiTestimonial.media_type,
+    image: apiTestimonial.media_url || null,
+    email: apiTestimonial.author_email || null,
+    category_id: apiTestimonial.category?.id || null,
+    created_at: apiTestimonial.created_at,
+    received: apiTestimonial.created_at,
+    author: apiTestimonial.author_name || null,
+    body: apiTestimonial.body || "",
   };
 };
 
-// ============================================
 // FILTROS
-// ============================================
 
 export const filterTestimonials = (
   testimonials: Testimonial[],
@@ -93,26 +78,27 @@ export const filterTestimonials = (
   if (!filterBy) return testimonials;
 
   return testimonials.filter((testimonial) => {
-    const content = (testimonial.content || "").toLowerCase();
+    // Filtro por categoría (formato: "category:categoryId")
+    if (filterBy.startsWith("category:")) {
+      const categoryId = filterBy.replace("category:", "");
+      return testimonial.categoryId === categoryId;
+    }
 
+    // Filtro por tipo de medio
     switch (filterBy) {
       case "video":
-        return content.includes("video");
+        return testimonial.mediaType === "video";
+      case "image":
+        return testimonial.mediaType === "image";
       case "text":
-        return content.includes("texto");
-      case "positive":
-        return content.includes("positivo") && !content.includes("negativo");
-      case "negative":
-        return content.includes("negativo");
+        return testimonial.mediaType === "none";
       default:
         return true;
     }
   });
 };
 
-// ============================================
 // ORDENAMIENTO
-// ============================================
 
 /**
  * Parsea una fecha en formato español "30 jun 2025" a Date
@@ -141,7 +127,6 @@ const parseSpanishDate = (dateStr: string): Date => {
     return new Date(year, month, day);
   }
 
-  // Fallback: intentar parsear como fecha ISO
   return new Date(dateStr);
 };
 
@@ -156,22 +141,25 @@ export const sortTestimonials = (
   sorted.sort((a, b) => {
     switch (sortBy) {
       case "date-desc": {
-        const dateA = parseSpanishDate(a.received || "");
-        const dateB = parseSpanishDate(b.received || "");
+        const dateA = parseSpanishDate(a.formattedDate);
+        const dateB = parseSpanishDate(b.formattedDate);
         return dateB.getTime() - dateA.getTime();
       }
 
       case "date-asc": {
-        const dateA = parseSpanishDate(a.received || "");
-        const dateB = parseSpanishDate(b.received || "");
+        const dateA = parseSpanishDate(a.formattedDate);
+        const dateB = parseSpanishDate(b.formattedDate);
         return dateA.getTime() - dateB.getTime();
       }
 
-      case "client":
-        return (a.client || "").localeCompare(b.client || "");
+      case "titulo":
+        return a.title.localeCompare(b.title);
 
-      case "editor":
-        return (a.editor || "").localeCompare(b.editor || "");
+      case "medio":
+        return a.mediaType.localeCompare(b.mediaType);
+
+      case "categoria":
+        return a.categoryName.localeCompare(b.categoryName);
 
       default:
         return 0;

@@ -22,50 +22,54 @@ export default function RecentTestimonials() {
         </Button>
       </div>
 
-      <div className="space-y-4">
+      <div className="overflow-hidden">
         {isLoading ? (
-          <>
+          // Skeleton loader en formato tabla
+          <div className="space-y-4 animate-pulse">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="flex gap-4 animate-pulse">
-                <div className="w-12 h-12 bg-gray-200 rounded-full" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-1/4" />
-                  <div className="h-3 bg-gray-200 rounded w-1/3" />
-                  <div className="h-3 bg-gray-200 rounded w-full" />
-                </div>
+              <div key={i} className="flex gap-4 border-b pb-4">
+                <div className="h-4 bg-gray-200 rounded w-1/4" />
+                <div className="h-4 bg-gray-200 rounded w-3/4" />
               </div>
             ))}
-          </>
+          </div>
         ) : testimonials.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             No hay testimonios publicados aún
           </div>
         ) : (
-          testimonials.map((testimonial) => (
-            <Link
-              key={testimonial.id}
-              href={`/dashboard/testimonials/${testimonial.id}`}
-              className="flex gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
-            >
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-semibold shrink-0">
-                {(testimonial.client ?? "T").charAt(0)}
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-800">
-                  {testimonial.client ?? "Sin nombre"}
-                </h3>
-                <p className="text-sm text-gray-500 mb-1">
-                  {testimonial.course ?? "Sin curso"}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {testimonial.content && testimonial.content.length > 90
-                    ? testimonial.content.slice(0, 90) + "..."
-                    : testimonial.content ?? "Sin contenido"}
-                </p>
-              </div>
-            </Link>
-          ))
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left border-collapse text-center">
+              <thead className="text-sm font-bold text-gray-900 border-b border-gray-100">
+                <tr>
+                  <th scope="col" className="py-6 px-4 text-center">Autor / Título</th>
+                  <th scope="col" className="py-6 px-4 text-center">Contenido</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-center">
+                {testimonials.map((testimonial) => (
+                  <tr
+                    key={testimonial.id}
+                    className="hover:bg-gray-50 transition-colors group"
+                  >
+                    <td className="py-6 px-4 align-top">
+                      <div
+                        className="text-base text-gray-600 font-mono mt-1 truncate max-w-[120px] text-center mx-auto"
+                        title={`${testimonial.author_name} / ${testimonial.title}`}
+                      >
+                        {testimonial.author_name} / {testimonial.title}
+                      </div>
+                    </td>
+                    <td className="py-6 px-4 text-gray-600 align-top">
+                      {testimonial.content.length > 100
+                        ? `${testimonial.content.substring(0, 100)}...`
+                        : testimonial.content}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
