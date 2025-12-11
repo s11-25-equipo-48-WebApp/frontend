@@ -31,7 +31,7 @@ type SaveDraftInput = Omit<TestimonyDraft, 'savedAt'> & { id?: string };
 // Modo de ejemplo simple de uso de Zustand con persistencia en localStorage 
 interface store {
   currentOrganization: string | null;
-  setCurrentOrganization: (_organizationId: string) => void;
+  setCurrentOrganization: (_organization: string | null) => void;
   drafts: TestimonyDraft[];
   saveDraft: (_draft: SaveDraftInput) => string;
   deleteDraft: (_id: string) => void;
@@ -42,7 +42,9 @@ export const useStore = create<store>()(
   persist(
     (set, get) => ({
       currentOrganization: null,
-      setCurrentOrganization: (organizationId: string) => set({ currentOrganization: organizationId }),
+      // Ahora aceptamos y guardamos el ID (string) o null
+      setCurrentOrganization: (organizationId: string | null) =>
+        set({ currentOrganization: organizationId }),
 
       // Estado de borradores
       drafts: [],
@@ -89,10 +91,14 @@ export const useStore = create<store>()(
         if (draftToDelete) {
           try {
             if (draftToDelete.videoFile && draftToDelete.videoFile.id) {
-              import('@/utils/indexedDB').then((m) => m.deleteFile(draftToDelete.videoFile!.id)).catch(() => {});
+              import('@/utils/indexedDB')
+                .then((m) => m.deleteFile(draftToDelete.videoFile!.id))
+                .catch(() => {});
             }
             if (draftToDelete.imageFile && draftToDelete.imageFile.id) {
-              import('@/utils/indexedDB').then((m) => m.deleteFile(draftToDelete.imageFile!.id)).catch(() => {});
+              import('@/utils/indexedDB')
+                .then((m) => m.deleteFile(draftToDelete.imageFile!.id))
+                .catch(() => {});
             }
           } catch (e) {
             // no bloquear el borrado por errores en IndexedDB
@@ -112,7 +118,7 @@ export const useStore = create<store>()(
     }),
     {
       name: 'testimony-store',
-      storage: createJSONStorage(() => localStorage)
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );

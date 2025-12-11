@@ -33,8 +33,10 @@ export const usePublicTestimonials = (
     staleTime: 5 * 60 * 1000, // 5 minutos
   });
 
-  // Aplicar filtros y ordenamiento en el cliente
-  let processedTestimonials = [...rawTestimonials];
+  // Filtrar solo testimonios aprobados 
+  let processedTestimonials = rawTestimonials.filter(
+    (t) => t.status === "aprobado"
+  );
 
   if (filterBy) {
     processedTestimonials = filterTestimonials(processedTestimonials, filterBy);

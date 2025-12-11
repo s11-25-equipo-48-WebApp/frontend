@@ -11,7 +11,7 @@ export const usePendingTestimonialsWidget = (limit: number = 4) => {
   const { data: session } = useSession();
   const { currentOrganization } = useStore();
 
-  const { data: testimonials = [], isLoading, error } = useQuery({
+  const { data: rawTestimonials = [], isLoading, error } = useQuery({
     queryKey: ['testimonials', 'pending-widget', currentOrganization, limit],
     queryFn: async () => {
       const allPending = await testimonialService.getPending(
@@ -26,6 +26,11 @@ export const usePendingTestimonialsWidget = (limit: number = 4) => {
     staleTime: 2 * 60 * 1000, // 2 minutos - más corto para el widget
     refetchInterval: 5 * 60 * 1000, // Refresca cada 5 minutos automáticamente
   });
+
+  // Filtrar solo testimonios pendientes
+  const testimonials = rawTestimonials.filter(
+    (t) => t.status === "pendiente"
+  );
 
   return {
     testimonials,

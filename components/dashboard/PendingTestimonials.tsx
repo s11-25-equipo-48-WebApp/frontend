@@ -20,8 +20,8 @@ export default function PendingTestimonials() {
           )}
         </div>
         <Button variant="ghost" className="p-0">
-          <Link 
-            href="/dashboard/pending-reviews" 
+          <Link
+            href="/dashboard/pending-reviews"
             className="text-sm font-medium"
           >
             Ver todo

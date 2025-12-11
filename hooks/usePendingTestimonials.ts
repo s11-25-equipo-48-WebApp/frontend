@@ -27,7 +27,10 @@ export const usePendingTestimonials = (
   });
 
   // Aplicar filtros y ordenamiento en el cliente
-  let processedTestimonials = [...rawTestimonials];
+  // Filtrar solo testimonios pendientes
+  let processedTestimonials = rawTestimonials.filter(
+    (t) => t.status === "pendiente"
+  );
 
   if (filterBy) {
     processedTestimonials = filterTestimonials(processedTestimonials, filterBy);

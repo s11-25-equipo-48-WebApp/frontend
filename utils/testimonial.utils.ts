@@ -3,9 +3,7 @@ import {
   TestimonialAPIResponse,
 } from "@/services/testimonial.service";
 
-// ============================================
 // TIPOS DE FILTROS Y ORDENAMIENTO
-// ============================================
 
 export type FilterType = "" | "video" | "image" | "text" | `category:${string}`;
 export type SortType =
@@ -16,9 +14,7 @@ export type SortType =
   | "medio"
   | "categoria";
 
-// ============================================
 // TRANSFORMADORES (API → UI)
-// ============================================
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -60,12 +56,21 @@ export const transformAPIToTestimonial = (
     createdAt: apiTestimonial.created_at,
     formattedDate: formatDate(apiTestimonial.created_at),
     editor: apiTestimonial.created_by_user?.name || "Sistema",
+    // Campos adicionales para compatibilidad con componentes existentes
+    media_url: apiTestimonial.media_url,
+    media_type: apiTestimonial.media_type,
+    image: apiTestimonial.media_url || null,
+    email: apiTestimonial.author_email || null,
+    category_id: apiTestimonial.category?.id || null,
+    created_at: apiTestimonial.created_at,
+    received: apiTestimonial.created_at,
+    author: apiTestimonial.author_name || null,
+    body: apiTestimonial.body || "",
+    status: apiTestimonial.status, // El servicio normalizará este valor después
   };
 };
 
-// ============================================
 // FILTROS
-// ============================================
 
 export const filterTestimonials = (
   testimonials: Testimonial[],
@@ -94,9 +99,7 @@ export const filterTestimonials = (
   });
 };
 
-// ============================================
 // ORDENAMIENTO
-// ============================================
 
 /**
  * Parsea una fecha en formato español "30 jun 2025" a Date

@@ -1,9 +1,15 @@
-import { mockTestimonials } from "@/data/mocks/mockTestimonials";
-import Image from "next/image";
-import Button from "@/components/Button";
+"use client";
 
-import EditIcon from "@/public/pencilIcon.svg";
-import CheckboxSuccess from "@/public/checkbox-succes.svg";
+import React, { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useTestimonialById } from "@/hooks/useTestimonialById";
+import TestimonialContent from "@/components/dashboard/testimonials/TestimonialContent";
+import { useStore } from "@/store/zustand";
+import { useQueryClient } from "@tanstack/react-query";
+import { testimonialService } from "@/services/testimonial.service";
+import { toast } from "react-toastify";
+import { CopyX } from "lucide-react";
 
 interface TestimonialProps {
   params: Promise<{
@@ -11,135 +17,142 @@ interface TestimonialProps {
   }>;
 }
 
-export default async function Testimonials({ params }: TestimonialProps) {
-  const { id } = await params;
+export default function Testimonials({ params }: TestimonialProps) {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [paramsState, setParamsState] = useState<string | null>(null);
+  // currentOrganization es el ID (string | null)
+  const organizationIdFromStore = useStore((s) => s.currentOrganization);
+  const queryClient = useQueryClient();
 
-  const testimonial = mockTestimonials.find((t) => t.id === id);
+  // Manejo de params asincrónico
+  useEffect(() => {
+    params.then((p) => setParamsState(p.id));
+  }, [params]);
 
-  if (!testimonial) {
+  const { testimonial, isLoading, error } = useTestimonialById(
+    paramsState || ""
+  );
+
+  const accessToken = session?.user?.accessToken || "";
+  const organizationId = organizationIdFromStore || "";
+
+  // Determinar si el usuario es Admin
+  const isAdmin =
+    (session?.user?.role === "admin" ||
+      session?.user?.organizations?.some((org) => org.role === "admin")) ??
+    false;
+
+  const [isApproving, setIsApproving] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  if (isLoading) {
     return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Testimonio no encontrado</h1>
-        <p>El testimonio con ID {id} no existe.</p>
+      <div className="p-6 flex flex-col items-center justify-center space-y-6">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-winered"></div>
+        <h1 className="text-2xl font-bold mb-4">Cargando Testimonio...</h1>
       </div>
     );
   }
 
+  if (error || !testimonial) {
+    return (
+      <div className="p-6 flex flex-col items-center justify-center space-y-6">
+        <h1 className="text-2xl font-bold mb-4">Testimonio no encontrado</h1>
+        <p className="text-gray-500">
+          El testimonio con ID {paramsState} no existe.
+        </p>
+        <CopyX className="text-winered" size={68} />
+      </div>
+    );
+  }
+
+  const handleApprove = async () => {
+    if (!organizationId || !accessToken || !testimonial?.id) {
+      toast.error("Falta organización o token para aprobar.");
+      return;
+    }
+    try {
+      setIsApproving(true);
+      await testimonialService.updateStatus(
+        organizationId,
+        testimonial.id,
+        accessToken,
+        "aprobado"
+      );
+      queryClient.invalidateQueries({ queryKey: ["testimonial", paramsState] });
+      toast.success("Testimonio aprobado");
+      // Redirigir a dashboard y hacer reload
+      router.push("/dashboard");
+      router.refresh();
+    } catch (error) {
+      console.error("Error al aprobar:", error);
+      toast.error("Error al aprobar el testimonio");
+    } finally {
+      setIsApproving(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!organizationId || !accessToken || !testimonial?.id) {
+      toast.error("Falta organización o token para rechazar.");
+      return;
+    }
+    try {
+      setIsRejecting(true);
+      await testimonialService.updateStatus(
+        organizationId,
+        testimonial.id,
+        accessToken,
+        "rechazado"
+      );
+      queryClient.invalidateQueries({ queryKey: ["testimonial", paramsState] });
+      toast.success("Testimonio rechazado");
+      // Redirigir a dashboard y hacer reload
+      router.push("/dashboard");
+      router.refresh();
+    } catch (error) {
+      console.error("Error al rechazar:", error);
+      toast.error("Error al rechazar el testimonio");
+    } finally {
+      setIsRejecting(false);
+    }
+  };
+
+  const handleSaveChanges = async (newBody: string) => {
+    if (!organizationId || !accessToken || !testimonial?.id) {
+      toast.error("Falta organización o token para guardar.");
+      return;
+    }
+    try {
+      setIsSaving(true);
+      await testimonialService.update(
+        organizationId,
+        testimonial.id,
+        accessToken,
+        { body: newBody }
+      );
+      queryClient.invalidateQueries({ queryKey: ["testimonial", paramsState] });
+      toast.success("Cambios guardados");
+    } catch (error) {
+      console.error("Error al guardar:", error);
+      toast.error("Error al guardar los cambios");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex mb-6 ">
-        <h1 className="text-3xl font-semibold px-6 py-1 rounded-lg  bg-btn-warning/10 text-btn-warning hover:brightness-95 dark:hover:brightness-110">
-          Detalles del testimonio
-        </h1>
-        <h2 className="text-3xl font-semibold ml-auto text-btn-warning hover:brightness-95 dark:hover:brightness-110">
-          Editor a cargo: {testimonial.name}
-        </h2>
-      </div>
-
-      <div className=" p-6 space-y-3">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Columna izquierda */}
-          <div className="text-md lg:text-xl  lg:col-span-2 space-y-6 flex flex-col justify-center">
-            <p>
-              <strong>Curso relacionado: </strong>
-              {testimonial.role}
-            </p>
-            <p>
-              <strong>Email:</strong> {testimonial.email}
-            </p>
-            <p>
-              <strong>Categoria: </strong>
-              <span>{testimonial.review}</span>
-            </p>
-            <p>
-              <strong>Fecha de recepción:</strong>{" "}
-              {new Date(testimonial.createdAt).toLocaleDateString("es-AR")}
-            </p>
-          </div>
-
-          {/* Columna derecha  */}
-          <div className="pr-0 lg:pr-10 lg:col-span-1 flex justify-center lg:justify-end items-start">
-            <div className="border-3 border-[#bf6a0252] py-2 px-4 rounded-lg">
-              <div className="relative w-60 h-60 lg:w-76 lg:h-76">
-                <Image
-                  src={testimonial.image}
-                  alt={`Foto de ${testimonial.name}`}
-                  fill
-                  className="object-cover rounded-lg shadow-md"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="pt-8">
-          <h3 className="font-bold text-xl mb-4 flex">
-            Testimonio en texto
-            <span>
-              <Image
-                src={EditIcon}
-                alt="Editar"
-                width={32}
-                height={32}
-                className="ml-5 justify-center items-center"
-              />
-            </span>
-            Editar
-          </h3>
-
-          <div className="border-3 border-[#bf6a0252] p-12 rounded-lg bg-gray-50">
-            <p className="text-gray-700 leading-relaxed">
-              {testimonial.content}
-            </p>
-          </div>
-        </div>
-
-        <div className="pt-8">
-          <h3 className="font-bold text-xl mb-4 flex">
-            Extracto que se publicará{" "}
-            <span>
-              <Image
-                src={EditIcon}
-                alt="Editar"
-                width={32}
-                height={32}
-                className="ml-5 justify-center items-center"
-              />
-            </span>
-            Editar
-          </h3>
-          <div className="border-3 border-[#bf6a0252] p-12 rounded-lg bg-gray-50">
-            <p className="text-gray-700 leading-relaxed">
-              {testimonial.content}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex ml-auto mt-8 lg:mt-14 p-4 rounded-lg bg-btn-success/25 w-fit gap-3 items-center">
-          <Image
-            src={CheckboxSuccess}
-            alt="Checkbox success"
-            width={24}
-            height={24}
-            className="pointer-events-none"
-          />
-          <label className="font-bold pr-10">
-            Testimonio con consentimiento
-          </label>
-        </div>
-
-        <div className="flex gap-5 ml-auto justify-end pt-8">
-          <Button color="green" size="fit">
-            Aprobar
-          </Button>
-          <Button color="red" size="fit">
-            Rechazar
-          </Button>
-          <Button color="orange" size="fit">
-            Guardar Cambios
-          </Button>
-        </div>
-      </div>
-    </div>
+    <TestimonialContent
+      testimonial={testimonial}
+      isAdmin={isAdmin}
+      onApprove={handleApprove}
+      onReject={handleReject}
+      onSaveChanges={handleSaveChanges}
+      approving={isApproving}
+      rejecting={isRejecting}
+      saving={isSaving}
+    />
   );
 }

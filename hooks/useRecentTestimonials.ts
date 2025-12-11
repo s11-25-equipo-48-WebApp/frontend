@@ -8,7 +8,7 @@ export const useRecentTestimonials = (limit: number = 5) => {
   const { currentOrganization } = useStore();
 
   const {
-    data: testimonials = [],
+    data: rawTestimonials = [],
     isLoading,
   } = useQuery({
     queryKey: ["testimonials", "recent", currentOrganization, limit],
@@ -24,6 +24,11 @@ export const useRecentTestimonials = (limit: number = 5) => {
     enabled: !!currentOrganization && !!session?.user?.accessToken,
     staleTime: 5 * 60 * 1000, // 5 minutos
   });
+
+  // Filtrar solo testimonios aprobados
+  const testimonials = rawTestimonials.filter(
+    (t) => t.status === "aprobado"
+  );
 
   return {
     testimonials,

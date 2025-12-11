@@ -1,17 +1,17 @@
-'use client';
-import { useStore } from '@/store/zustand';
-import { useSession } from 'next-auth/react';
-import { redirect } from 'next/navigation';
-import Button from '@/components/Button';
-import UserInfo from '@/components/UserInfo';
-import OrganizationModal from '@/components/Modals/OrganizationModal';
-import DeleteModal from '@/components/Modals/DeleteModal';
-import api from '@/services/config';
-import { useState, useEffect } from 'react';
-import useRefreshAccessTokenClient from '@/hooks/useRefreshToken.client';
-import { SquarePen, Users, Trash2 } from 'lucide-react';
+"use client";
+import { useStore } from "@/store/zustand";
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import Button from "@/components/Button";
+import UserInfo from "@/components/UserInfo";
+import OrganizationModal from "@/components/Modals/OrganizationModal";
+import DeleteModal from "@/components/Modals/DeleteModal";
+import api from "@/services/config";
+import { useState, useEffect } from "react";
+import useRefreshAccessTokenClient from "@/hooks/useRefreshToken.client";
+import { SquarePen, Users, Trash2 } from "lucide-react";
 interface Organization {
-  id: number;
+  id: string;
   name: string;
   description: string;
   role: string;
@@ -39,16 +39,24 @@ export default function Home() {
       setLoading(true);
       setError(null);
 
-      const { data: resp } = await api.get('/organization/my-organizations', {
+      const { data: resp } = await api.get("/organization/my-organizations", {
         headers: {
           Authorization: `Bearer ${session?.user?.accessToken}`,
         },
       });
       const data = resp.data;
-      setOrganizations(data);
+      // asegurar que no haya duplicados por id (a veces la API puede devolver entradas repetidas)
+      if (Array.isArray(data)) {
+        const unique = Array.from(
+          new Map(data.map((o: any) => [o.id, o])).values()
+        );
+        setOrganizations(unique);
+      } else {
+        setOrganizations([]);
+      }
     } catch (err) {
-      console.error('Error fetching organizations:', err);
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+      console.error("Error fetching organizations:", err);
+      setError(err instanceof Error ? err.message : "Error desconocido");
       setOrganizations([]);
     } finally {
       setLoading(false);
@@ -61,9 +69,10 @@ export default function Home() {
     }
   }, [session]);
 
-  const toggleOrganization = (organizationId: string) => {
-    setCurrentOrganization(organizationId);
-    redirect('/dashboard');
+  const toggleOrganization = (organization: Organization) => {
+    // Guardamos únicamente el ID (string) para mantener compatibilidad con el resto del código
+    setCurrentOrganization(organization.id);
+    redirect("/dashboard");
   };
 
   const handleCreateNew = () => {
@@ -130,8 +139,8 @@ export default function Home() {
   const formatDate = (dateString: string) => {
     const d = new Date(dateString);
     if (isNaN(d.getTime())) return dateString;
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
     const year = d.getFullYear();
     return `${day}/${month}/${year}`;
   };
@@ -189,8 +198,8 @@ export default function Home() {
                   </h3>
                   <p className="text-foreground/60 mb-6">
                     {error
-                      ? 'No se pudieron cargar las organizaciones. Intenta nuevamente.'
-                      : 'Comienza creando tu primera organización para empezar a trabajar.'}
+                      ? "No se pudieron cargar las organizaciones. Intenta nuevamente."
+                      : "Comienza creando tu primera organización para empezar a trabajar."}
                   </p>
                 </div>
               </div>
@@ -201,7 +210,7 @@ export default function Home() {
                 <div
                   key={organization.id}
                   className="border-6 border-winered/30 rounded-3xl overflow-hidden bg-card hover:shadow-lg transition-shadow duration-300 cursor-pointer"
-                  onClick={() => toggleOrganization(organization.id.toString())}
+                  onClick={() => toggleOrganization(organization)}
                 >
                   <div className="flex items-center justify-between px-6 py-3">
                     <span className="px-3 py-1 border-2 border-winered text-skyblue text-sm font-medium rounded-full">
@@ -276,7 +285,6 @@ export default function Home() {
         message="¿Seguro que quieres eliminar esta organización?"
         itemName={organizationToDelete?.name}
       />
-
     </main>
   );
 }
