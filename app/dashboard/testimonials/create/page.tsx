@@ -2,6 +2,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import api from '@/services/config';
 import InputForm from '@/components/InputForm';
 import SelectForm from '@/components/SelectForm';
@@ -28,6 +29,7 @@ interface TestimonyFormData {
 }
 
 export default function CreateTestimonyPage() {
+    const router = useRouter();
     const [mediaType, setMediaType] = useState<MediaType>('none');
     const [videoFile, setVideoFile] = useState<File | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -124,6 +126,8 @@ export default function CreateTestimonyPage() {
             setVideoFile(null);
             setImageFile(null);
             setMediaType('none');
+
+            router.push('/dashboard');
         },
         onError: (error: Error) => {
             toast.error(error.message || 'Error al crear el testimonio');
@@ -422,6 +426,7 @@ export default function CreateTestimonyPage() {
                                         });
 
                                         toast.success('Borrador guardado en biblioteca');
+                                        router.push('/dashboard/library');
                                     } catch (error) {
                                         toast.error('Error al guardar el borrador');
                                         console.error(error);

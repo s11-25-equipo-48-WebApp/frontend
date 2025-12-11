@@ -66,6 +66,7 @@ export const transformAPIToTestimonial = (
     received: apiTestimonial.created_at,
     author: apiTestimonial.author_name || null,
     body: apiTestimonial.body || "",
+    status: apiTestimonial.status, // El servicio normalizará este valor después
   };
 };
 

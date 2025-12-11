@@ -118,7 +118,7 @@ export const testimonialService = {
     const apiTestimonials = response.data.data.data || [];
     return apiTestimonials
       .map(transformAPIToTestimonial)
-      .map((t) => ({ ...t, status: normalizeStatus(t.status) }));
+      .map((t) => ({ ...t, status: normalizeStatus(t.status) || "pendiente" }));
   },
 
   getPublic: async (
@@ -145,7 +145,7 @@ export const testimonialService = {
     const apiTestimonials = response.data.data.data || [];
     return apiTestimonials
       .map(transformAPIToTestimonial)
-      .map((t) => ({ ...t, status: normalizeStatus(t.status) }));
+      .map((t) => ({ ...t, status: normalizeStatus(t.status) || "pendiente" }));
   },
 
   getRecent: async (
@@ -178,7 +178,7 @@ export const testimonialService = {
     );
 
     const t = transformAPIToTestimonial(response.data.data);
-    return { ...t, status: normalizeStatus(t.status) };
+    return { ...t, status: normalizeStatus(t.status) || "pendiente" };
   },
 
   deleteMany: async (
@@ -229,7 +229,7 @@ export const testimonialService = {
     );
 
     const t = transformAPIToTestimonial(response.data.data);
-    return { ...t, status: normalizeStatus(t.status) };
+    return { ...t, status: normalizeStatus(t.status) || "pendiente" };
   },
 
   /**
@@ -252,6 +252,6 @@ export const testimonialService = {
     );
 
     const t = transformAPIToTestimonial(response.data.data);
-    return { ...t, status: normalizeStatus(t.status) };
+    return { ...t, status: normalizeStatus(t.status) || "pendiente" };
   },
 };

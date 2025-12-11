@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useTestimonialById } from "@/hooks/useTestimonialById";
 import TestimonialContent from "@/components/dashboard/testimonials/TestimonialContent";
 import { useStore } from "@/store/zustand";
@@ -18,6 +19,7 @@ interface TestimonialProps {
 
 export default function Testimonials({ params }: TestimonialProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const [paramsState, setParamsState] = useState<string | null>(null);
   // currentOrganization es el ID (string | null)
   const organizationIdFromStore = useStore((s) => s.currentOrganization);
@@ -81,6 +83,9 @@ export default function Testimonials({ params }: TestimonialProps) {
       );
       queryClient.invalidateQueries({ queryKey: ["testimonial", paramsState] });
       toast.success("Testimonio aprobado");
+      // Redirigir a dashboard y hacer reload
+      router.push("/dashboard");
+      router.refresh();
     } catch (error) {
       console.error("Error al aprobar:", error);
       toast.error("Error al aprobar el testimonio");
@@ -104,6 +109,9 @@ export default function Testimonials({ params }: TestimonialProps) {
       );
       queryClient.invalidateQueries({ queryKey: ["testimonial", paramsState] });
       toast.success("Testimonio rechazado");
+      // Redirigir a dashboard y hacer reload
+      router.push("/dashboard");
+      router.refresh();
     } catch (error) {
       console.error("Error al rechazar:", error);
       toast.error("Error al rechazar el testimonio");
@@ -142,7 +150,6 @@ export default function Testimonials({ params }: TestimonialProps) {
       onApprove={handleApprove}
       onReject={handleReject}
       onSaveChanges={handleSaveChanges}
-      // nuevos flags para controlar UI del componente
       approving={isApproving}
       rejecting={isRejecting}
       saving={isSaving}
