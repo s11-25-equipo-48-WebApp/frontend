@@ -1,16 +1,17 @@
-'use client';
-import { useStore } from '@/store/zustand';
-import { useSession } from 'next-auth/react';
-import { redirect } from 'next/navigation';
-import Button from '@/components/Button';
-import UserInfo from '@/components/UserInfo';
-import OrganizationModal from '@/components/Modals/OrganizationModal';
-import DeleteModal from '@/components/Modals/DeleteModal';
-import api from '@/services/config';
-import { useState, useEffect } from 'react';
-import useRefreshAccessTokenClient from '@/hooks/useRefreshToken.client';
-import { SquarePen, Users, Trash2 } from 'lucide-react';
-import Link from 'next/link';
+"use client";
+import { useStore } from "@/store/zustand";
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import Button from "@/components/Button";
+import UserInfo from "@/components/UserInfo";
+import OrganizationModal from "@/components/Modals/OrganizationModal";
+import DeleteModal from "@/components/Modals/DeleteModal";
+import api from "@/services/config";
+import { useState, useEffect } from "react";
+import useRefreshAccessTokenClient from "@/hooks/useRefreshToken.client";
+import { SquarePen, Users, Trash2 } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
 interface Organization {
   id: string;
   name: string;
@@ -40,13 +41,12 @@ export default function Home() {
       setLoading(true);
       setError(null);
 
-      const { data: resp } = await api.get('/organization/my-organizations', {
+      const { data: resp } = await api.get("/organization/my-organizations", {
         headers: {
           Authorization: `Bearer ${session?.user?.accessToken}`,
         },
       });
       const data = resp.data;
-      // asegurar que no haya duplicados por id (a veces la API puede devolver entradas repetidas)
       if (Array.isArray(data)) {
         const unique = Array.from(
           new Map(data.map((o: any) => [o.id, o])).values()
@@ -56,8 +56,8 @@ export default function Home() {
         setOrganizations([]);
       }
     } catch (err) {
-      console.error('Error fetching organizations:', err);
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+      console.error("Error fetching organizations:", err);
+      setError(err instanceof Error ? err.message : "Error desconocido");
       setOrganizations([]);
     } finally {
       setLoading(false);
@@ -71,10 +71,9 @@ export default function Home() {
   }, [session]);
 
   const toggleOrganization = (organization: Organization) => {
-    // Guardamos únicamente el ID (string) para mantener compatibilidad con el resto del código
     setCurrentOrganization(organization.id);
     setRole(organization.role);
-    redirect('/dashboard');
+    redirect("/dashboard");
   };
 
   const handleCreateNew = () => {
@@ -141,25 +140,25 @@ export default function Home() {
   const formatDate = (dateString: string) => {
     const d = new Date(dateString);
     if (isNaN(d.getTime())) return dateString;
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
     const year = d.getFullYear();
     return `${day}/${month}/${year}`;
   };
 
-  // Función auxiliar para verificar si el usuario es admin
   const isAdmin = (role: string) => {
-    return role.toLowerCase() === 'admin';
+    return role.toLowerCase() === "admin";
   };
 
   return (
     <main className="min-h-screen bg-background">
-
       <nav className="border-b border-gray-200 bg-white sticky top-0 z-50 shadow-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-4">
-              <h1 className="text-xl font-bold text-foreground">Mi App</h1>
+              <div className="text-2xl font-bold text-winered dark:text-yellow cursor-pointer">
+                Sayso
+              </div>
             </div>
             <div className="flex items-center gap-4">
               <UserInfo />
@@ -177,20 +176,19 @@ export default function Home() {
                   Sus organizaciones
                 </h2>
               </div>
-
-              <Button
-                variant="wineAlt"
-                size="fit"
-                className="px-4"
-                onClick={handleCreateNew}
-              >
-                Crear nueva organización
-              </Button>
-              <Link
-              href={'/search'}
-              >
-                Buscar Organizacion
-              </Link>
+              <div className="flex gap-6">
+                <Button
+                  variant="wineAlt"
+                  size="fit"
+                  className="px-4"
+                  onClick={handleCreateNew}
+                >
+                  Crear nueva organización
+                </Button>
+                <Button variant="wineAlt" size="fit" className="px-4">
+                  <Link href={"/search"}>Buscar Organizacion</Link>
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -211,8 +209,8 @@ export default function Home() {
                   </h3>
                   <p className="text-foreground/60 mb-6">
                     {error
-                      ? 'No se pudieron cargar las organizaciones. Intenta nuevamente.'
-                      : 'Comienza creando tu primera organización para empezar a trabajar.'}
+                      ? "No se pudieron cargar las organizaciones. Intenta nuevamente."
+                      : "Comienza creando tu primera organización para empezar a trabajar."}
                   </p>
                 </div>
               </div>
