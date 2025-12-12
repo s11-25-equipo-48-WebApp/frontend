@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Button from '@/components/Button';
 import CheckboxSuccess from '@/public/checkbox-succes.svg';
 import { Testimonial } from '@/services/testimonial.service';

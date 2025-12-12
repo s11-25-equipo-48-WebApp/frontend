@@ -23,7 +23,7 @@ export default function Topbar({ user }: TopBarProps) {
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const { updateUser, isLoading } = useUser();
   const { organization } = useOrganization();
   const { data: session, update: updateSession } = useSession();
@@ -56,7 +56,7 @@ export default function Topbar({ user }: TopBarProps) {
     }
 
     const result = await updateUser({ name: newName });
-    
+
     if (result) {
       await updateSession({
         ...session,
@@ -65,7 +65,7 @@ export default function Topbar({ user }: TopBarProps) {
           name: result.name,
         },
       });
-      
+
       setIsEditingName(false);
     }
   };
@@ -74,11 +74,13 @@ export default function Topbar({ user }: TopBarProps) {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith("image/")) {
       toast.error("Por favor selecciona un archivo de imagen válido");
       return;
     }
@@ -92,11 +94,13 @@ export default function Topbar({ user }: TopBarProps) {
 
     try {
       const currentSession = await updateSession();
-      
+
       if (!currentSession?.user?.accessToken) {
-        toast.error("No hay una sesión activa. Por favor inicia sesión nuevamente.");
+        toast.error(
+          "No hay una sesión activa. Por favor inicia sesión nuevamente."
+        );
         setTimeout(() => {
-          window.location.href = '/auth/login';
+          window.location.href = "/auth/login";
         }, 2000);
         return;
       }
@@ -107,15 +111,17 @@ export default function Topbar({ user }: TopBarProps) {
       });
 
       if (!uploadResult.success || !uploadResult.url) {
-        throw new Error(uploadResult.error || "Error al subir la imagen a Cloudinary");
+        throw new Error(
+          uploadResult.error || "Error al subir la imagen a Cloudinary"
+        );
       }
 
-      const result = await updateUser({ 
+      const result = await updateUser({
         profile: {
-          avatar_url: uploadResult.url 
-        }
+          avatar_url: uploadResult.url,
+        },
       });
-      
+
       if (result) {
         await updateSession({
           ...currentSession,
@@ -129,14 +135,17 @@ export default function Topbar({ user }: TopBarProps) {
       }
     } catch (error: any) {
       console.error("Error uploading photo:", error);
-      
+
       if (error?.response?.status === 401) {
         toast.error("Sesión expirada. Por favor inicia sesión nuevamente.");
         setTimeout(() => {
-          window.location.href = '/auth/login';
+          window.location.href = "/auth/login";
         }, 2000);
       } else {
-        toast.error(error?.message || "Error al subir la foto. Por favor intenta de nuevo.");
+        toast.error(
+          error?.message ||
+            "Error al subir la foto. Por favor intenta de nuevo."
+        );
       }
     } finally {
       setIsUploadingPhoto(false);
@@ -152,17 +161,17 @@ export default function Topbar({ user }: TopBarProps) {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link 
+              <Link
                 href="/"
                 className="text-xl font-bold text-gray-900 hover:text-gray-700 transition-colors"
               >
                 {organization?.name || "Mi Organización"}
               </Link>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 cursor-pointer">
               <button
                 onClick={() => setShowModal(true)}
-                className="flex items-center gap-3 px-4 py-2 rounded-full hover:bg-gray-50 transition-all duration-200 group"
+                className="flex items-center gap-3 px-4 py-2 rounded-full hover:bg-gray-50 transition-all duration-200 group cursor-pointer"
               >
                 <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
                   {currentName}
@@ -210,7 +219,7 @@ export default function Topbar({ user }: TopBarProps) {
               <h2 className="text-2xl font-bold text-gray-900">Mi Perfil</h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700 cursor-pointer "
                 aria-label="Cerrar modal"
               >
                 <X size={24} />
@@ -242,7 +251,7 @@ export default function Topbar({ user }: TopBarProps) {
                 className="flex items-center gap-2 px-6 py-2.5 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
               >
                 <CloudUpload size={18} />
-                <span className="font-medium">
+                <span className="font-medium cursor-pointer">
                   {isUploadingPhoto ? "Subiendo..." : "Cambiar foto"}
                 </span>
               </button>
@@ -250,8 +259,8 @@ export default function Topbar({ user }: TopBarProps) {
 
             {/* Input de nombre */}
             <div className="mb-8">
-              <label 
-                htmlFor="name" 
+              <label
+                htmlFor="name"
                 className="block text-sm font-semibold text-gray-700 mb-3"
               >
                 Nombre de usuario
@@ -263,15 +272,15 @@ export default function Topbar({ user }: TopBarProps) {
                 onChange={(e) => setNewName(e.target.value)}
                 disabled={!isEditingName || isLoading}
                 className={`w-full rounded-2xl px-5 py-3.5 border-2 transition-all duration-200 ${
-                  !isEditingName 
-                    ? "bg-gray-50 border-gray-200 text-gray-600 cursor-not-allowed" 
+                  !isEditingName
+                    ? "bg-gray-50 border-gray-200 text-gray-600 cursor-not-allowed"
                     : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
                 } disabled:opacity-70`}
                 maxLength={50}
                 placeholder="Ingresa tu nombre"
               />
             </div>
-            
+
             {/* Botones de acción */}
             <div className="flex flex-col gap-3">
               {!isEditingName ? (
