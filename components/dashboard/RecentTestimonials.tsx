@@ -52,26 +52,37 @@ export default function RecentTestimonials() {
               </thead>
               <tbody className="divide-y divide-gray-100 text-center">
                 {testimonials.map((testimonial) => (
-                  <Link
-                    href={`/dashboard/testimonials/${testimonial.id}`}
+                  <tr
+                    className="hover:bg-gray-50 transition-colors group cursor-pointer"
                     key={testimonial.id}
+                    onClick={() =>
+                      (window.location.href = `/dashboard/testimonials/${testimonial.id}`)
+                    }
                   >
-                    <tr className="hover:bg-gray-50 transition-colors group">
-                      <td className="py-6 px-4 align-top">
+                    <td className="py-6 px-4 align-top">
+                      <Link
+                        href={`/dashboard/testimonials/${testimonial.id}`}
+                        className="block"
+                      >
                         <div
                           className="text-base text-gray-600 font-mono mt-1 truncate max-w-[120px] text-center mx-auto"
                           title={`${testimonial.author_name} / ${testimonial.title}`}
                         >
                           {testimonial.author_name} / {testimonial.title}
                         </div>
-                      </td>
-                      <td className="py-6 px-4 text-gray-600 align-top">
+                      </Link>
+                    </td>
+                    <td className="py-6 px-4 text-gray-600 align-top">
+                      <Link
+                        href={`/dashboard/testimonials/${testimonial.id}`}
+                        className="block"
+                      >
                         {testimonial.content.length > 100
                           ? `${testimonial.content.substring(0, 100)}...`
                           : testimonial.content}
-                      </td>
-                    </tr>
-                  </Link>
+                      </Link>
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </table>

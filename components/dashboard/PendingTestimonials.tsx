@@ -1,10 +1,20 @@
 "use client";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import Button from "../Button";
 import { usePendingTestimonialsWidget } from "@/hooks/usePendingTestimonialsWidget";
+import { useStore } from "@/store/zustand";
 
 export default function PendingTestimonials() {
+  const { data: session } = useSession();
+  const { currentOrganization } = useStore();
   const { testimonials, count, isLoading } = usePendingTestimonialsWidget(4);
+
+  const currentOrgRole = session?.user?.organizations
+    ?.find((org) => org.id === currentOrganization)
+    ?.role?.toLowerCase();
+
+  const isAdmin = currentOrgRole === "admin";
 
   return (
     <div className="bg-white rounded-xl shadow-sm border-2 border-pink-500 p-6">
@@ -21,7 +31,7 @@ export default function PendingTestimonials() {
         </div>
         <Button variant="ghost" className="p-0">
           <Link
-            href="/dashboard/pending-reviews"
+            href="/dashboard/testimonials/pending-reviews"
             className="text-sm font-medium"
           >
             Ver todo
@@ -32,7 +42,7 @@ export default function PendingTestimonials() {
       <div className="overflow-x-auto">
         <table className="min-w-full text-left border-collapse text-center">
           <thead className="text-sm font-bold text-gray-900 border-b border-gray-100">
-            <tr >
+            <tr>
               <th scope="col" className="py-6 px-4 text-center">
                 Autor / Título
               </th>
@@ -66,7 +76,9 @@ export default function PendingTestimonials() {
             ) : testimonials.length === 0 ? (
               <tr>
                 <td colSpan={3} className="py-8 text-center text-gray-500">
-                  No hay testimonios pendientes de revisión
+                  {isAdmin
+                    ? "No hay testimonios pendientes de revisión"
+                    : "No tienes testimonios pendientes"}
                 </td>
               </tr>
             ) : (
