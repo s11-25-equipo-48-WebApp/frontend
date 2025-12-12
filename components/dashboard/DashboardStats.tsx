@@ -1,51 +1,69 @@
-'use client';
-import { ArrowUpRight } from 'lucide-react';
-import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
-import Link from 'next/link';
+"use client";
+import { ArrowUpRight } from "lucide-react";
+import { useDashboardMetrics } from "@/hooks/useDashboardMetrics";
+import Link from "next/link";
+import { useStore } from "@/store/zustand";
 
 export default function DashboardStats() {
   const { metrics, isLoading } = useDashboardMetrics();
-
-  const cards = [
+  const { role: userRole } = useStore();
+  const allCardItems = [
     {
-      title: 'Testimonios publicados (mes)',
+      title: "Testimonios publicados (mes)",
       value: metrics?.publishedMonth ?? 0,
-      color: 'bg-green-500',
-      link: '/dashboard/testimonials/published',
+      color: "bg-green-500",
+      link: "/dashboard/testimonials/published",
       showViewAll: true,
+      roles: ["admin", "editor"] as const,
     },
     {
-      title: 'Testimonios recibidos (mes)',
+      title: "Testimonios recibidos (mes)",
       value: metrics?.receivedMonth ?? 0,
-      color: 'bg-blue-500',
-      link: '/dashboard/testimonials/received',
+      color: "bg-blue-500",
+      link: "/dashboard/pending-reviews",
       showViewAll: true,
+      roles: ["admin", "editor"] as const,
     },
     {
-      title: 'Tasa de aprobación',
+      title: "Tasa de aprobación",
       value: `${metrics?.approvalRate ?? 0}%`,
-      color: 'bg-orange-500',
+      color: "bg-orange-500",
       showViewAll: false,
+      roles: ["admin"] as const,
     },
     {
-      title: 'Tasa de consentimiento',
+      title: "Tasa de consentimiento",
       value: `${metrics?.consentRate ?? 0}%`,
-      color: 'bg-purple-500',
+      color: "bg-purple-500",
       showViewAll: false,
+      roles: ["admin"] as const,
     },
     {
-      title: 'Visualizaciones',
+      title: "Visualizaciones",
       value: metrics?.views ?? 0,
-      color: 'bg-gray-800',
+      color: "bg-gray-800",
       showViewAll: false,
+      roles: ["admin"] as const,
     },
   ];
 
+  const cardsItems = userRole
+    ? allCardItems.filter((card) =>
+        (card.roles as readonly string[]).includes(userRole)
+      )
+    : allCardItems.filter((card) =>
+        (card.roles as readonly string[]).includes("editor")
+      );
+
   if (isLoading) {
+    const skeletonCount = cardsItems.length || 2;
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="bg-white rounded-xl p-6 shadow-sm animate-pulse">
+        {Array.from({ length: skeletonCount }).map((_, i) => (
+          <div
+            key={i}
+            className="bg-white rounded-xl p-6 shadow-sm animate-pulse"
+          >
             <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
             <div className="h-8 bg-gray-200 rounded w-1/2 mb-4"></div>
             <div className="h-4 bg-gray-200 rounded w-1/3"></div>
@@ -56,12 +74,18 @@ export default function DashboardStats() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-      {cards.map((card, index) => (
+    <div
+      className={`grid grid-cols-1 md:grid-cols-2 ${
+        cardsItems.length > 2 ? "lg:grid-cols-5" : "lg:grid-cols-2"
+      } gap-4`}
+    >
+      {cardsItems.map((card, index) => (
         <div
           key={index}
-          className={`${card.color} rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow relative overflow-hidden ${
-            card.showViewAll ? 'group cursor-pointer' : ''
+          className={`${
+            card.color
+          } rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow relative overflow-hidden ${
+            card.showViewAll ? "group cursor-pointer" : ""
           }`}
         >
           <div className="relative z-10">
@@ -69,9 +93,9 @@ export default function DashboardStats() {
               {card.title}
             </h3>
             <p className="text-3xl font-bold mb-4">{card.value}</p>
-            
+
             {card.showViewAll && card.link && (
-              <Link 
+              <Link
                 href={card.link}
                 className="flex items-center gap-2 text-sm font-medium hover:gap-3 transition-all"
               >

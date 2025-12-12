@@ -39,31 +39,48 @@ export default function RecentTestimonials() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full text-left border-collapse text-center">
+            <table className="min-w-full text-left border-collapse">
               <thead className="text-sm font-bold text-gray-900 border-b border-gray-100">
                 <tr>
-                  <th scope="col" className="py-6 px-4 text-center">Autor / Título</th>
-                  <th scope="col" className="py-6 px-4 text-center">Contenido</th>
+                  <th scope="col" className="py-6 px-4 text-center">
+                    Autor / Título
+                  </th>
+                  <th scope="col" className="py-6 px-4 text-center">
+                    Contenido
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-center">
                 {testimonials.map((testimonial) => (
                   <tr
+                    className="hover:bg-gray-50 transition-colors group cursor-pointer"
                     key={testimonial.id}
-                    className="hover:bg-gray-50 transition-colors group"
+                    onClick={() =>
+                      (window.location.href = `/dashboard/testimonials/${testimonial.id}`)
+                    }
                   >
                     <td className="py-6 px-4 align-top">
-                      <div
-                        className="text-base text-gray-600 font-mono mt-1 truncate max-w-[120px] text-center mx-auto"
-                        title={`${testimonial.author_name} / ${testimonial.title}`}
+                      <Link
+                        href={`/dashboard/testimonials/${testimonial.id}`}
+                        className="block"
                       >
-                        {testimonial.author_name} / {testimonial.title}
-                      </div>
+                        <div
+                          className="text-base text-gray-600 font-mono mt-1 truncate max-w-[120px] text-center mx-auto"
+                          title={`${testimonial.author_name} / ${testimonial.title}`}
+                        >
+                          {testimonial.author_name} / {testimonial.title}
+                        </div>
+                      </Link>
                     </td>
                     <td className="py-6 px-4 text-gray-600 align-top">
-                      {testimonial.content.length > 100
-                        ? `${testimonial.content.substring(0, 100)}...`
-                        : testimonial.content}
+                      <Link
+                        href={`/dashboard/testimonials/${testimonial.id}`}
+                        className="block"
+                      >
+                        {testimonial.content.length > 100
+                          ? `${testimonial.content.substring(0, 100)}...`
+                          : testimonial.content}
+                      </Link>
                     </td>
                   </tr>
                 ))}
