@@ -39,33 +39,39 @@ export default function RecentTestimonials() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full text-left border-collapse text-center">
+            <table className="min-w-full text-left border-collapse">
               <thead className="text-sm font-bold text-gray-900 border-b border-gray-100">
                 <tr>
-                  <th scope="col" className="py-6 px-4 text-center">Autor / Título</th>
-                  <th scope="col" className="py-6 px-4 text-center">Contenido</th>
+                  <th scope="col" className="py-6 px-4 text-center">
+                    Autor / Título
+                  </th>
+                  <th scope="col" className="py-6 px-4 text-center">
+                    Contenido
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-center">
                 {testimonials.map((testimonial) => (
-                  <tr
+                  <Link
+                    href={`/dashboard/testimonials/${testimonial.id}`}
                     key={testimonial.id}
-                    className="hover:bg-gray-50 transition-colors group"
                   >
-                    <td className="py-6 px-4 align-top">
-                      <div
-                        className="text-base text-gray-600 font-mono mt-1 truncate max-w-[120px] text-center mx-auto"
-                        title={`${testimonial.author_name} / ${testimonial.title}`}
-                      >
-                        {testimonial.author_name} / {testimonial.title}
-                      </div>
-                    </td>
-                    <td className="py-6 px-4 text-gray-600 align-top">
-                      {testimonial.content.length > 100
-                        ? `${testimonial.content.substring(0, 100)}...`
-                        : testimonial.content}
-                    </td>
-                  </tr>
+                    <tr className="hover:bg-gray-50 transition-colors group">
+                      <td className="py-6 px-4 align-top">
+                        <div
+                          className="text-base text-gray-600 font-mono mt-1 truncate max-w-[120px] text-center mx-auto"
+                          title={`${testimonial.author_name} / ${testimonial.title}`}
+                        >
+                          {testimonial.author_name} / {testimonial.title}
+                        </div>
+                      </td>
+                      <td className="py-6 px-4 text-gray-600 align-top">
+                        {testimonial.content.length > 100
+                          ? `${testimonial.content.substring(0, 100)}...`
+                          : testimonial.content}
+                      </td>
+                    </tr>
+                  </Link>
                 ))}
               </tbody>
             </table>
