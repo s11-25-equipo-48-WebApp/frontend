@@ -10,6 +10,7 @@ import api from '@/services/config';
 import { useState, useEffect } from 'react';
 import useRefreshAccessTokenClient from '@/hooks/useRefreshToken.client';
 import { SquarePen, Users, Trash2 } from 'lucide-react';
+import Link from 'next/link';
 interface Organization {
   id: string;
   name: string;
@@ -185,6 +186,11 @@ export default function Home() {
               >
                 Crear nueva organización
               </Button>
+              <Link
+              href={'/search'}
+              >
+                Buscar Organizacion
+              </Link>
             </div>
           </div>
 
