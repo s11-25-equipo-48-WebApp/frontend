@@ -3,14 +3,12 @@ import axios from 'axios';
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   withCredentials: true,
-  timeout: 8000,
 });
 
 // separate client for refresh to avoid interceptor recursion
 const refreshClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   withCredentials: true,
-  timeout: 8000,
 });
 
 api.interceptors.response.use(

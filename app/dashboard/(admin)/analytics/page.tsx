@@ -72,12 +72,13 @@ export default function AnalyticsPage() {
     },
     enabled: !!currentOrganization,
   });
-
   const totalEvents = analyticsData?.data?.length || 0;
-  const percentOfApproval = !isPending && analyticsData?.data ? (analyticsData.data.filter((item: analyticsEvent) => item.tipo_evento === 'approval').length / analyticsData.data.length) * 100 : 0;
-  const TestimonialsReceived = !isPending && analyticsData?.data ? analyticsData.data.filter((item: analyticsEvent) => item.tipo_evento === 'submission').length : 0;
-  const TestimonialsViews = !isPending && analyticsData?.data ? analyticsData.data.filter((item: analyticsEvent) => item.tipo_evento === 'view').length : 0;
-  const percentOfConsent = !isPending && analyticsData?.data ? (analyticsData.data.filter((item: analyticsEvent) => item.tipo_evento === 'consent_given').length / analyticsData.data.length) * 100 : 0;
+  const percentOfApproval = !isPending && analyticsData?.data > 0 ? (analyticsData.data.filter((item: analyticsEvent) => item.tipo_evento === 'approval').length / analyticsData.data.length) * 100 : 0;
+  const TestimonialsReceived = !isPending && analyticsData?.data > 0 ? analyticsData.data.filter((item: analyticsEvent) => item.tipo_evento === 'submission').length : 0;
+  const TestimonialsViews = !isPending && analyticsData?.data > 0 ? analyticsData.data.filter((item: analyticsEvent) => item.tipo_evento === 'view').length : 0;
+  const percentOfConsent = !isPending && analyticsData?.data > 0 ? (analyticsData.data.filter((item: analyticsEvent) => item.tipo_evento === 'consent_given').length / analyticsData.data.length) * 100 : 0;
+  console.log(percentOfApproval);
+
   const stats = [
     { label: 'Testimonios publicados', value: totalEvents, color: 'from-green-400 to-green-600' },
     { label: 'Testimonios recibidos', value: TestimonialsReceived, color: 'from-blue-400 to-blue-600' },
@@ -206,7 +207,7 @@ export default function AnalyticsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {!error && analyticsData?.data && analyticsData.data.map((item: analyticsEvent, index: number) => (
+                    {!error && analyticsData?.data && analyticsData.data.length > 0 ? analyticsData.data.map((item: analyticsEvent, index: number) => (
                       <tr key={index} className="border-b border-foreground/5 hover:bg-background/50 transition-colors">
                         <td className="px-6 py-4 text-foreground/70 text-nowrap ">{item.id}</td>
                         <td className="px-6 py-4">
@@ -234,7 +235,13 @@ export default function AnalyticsPage() {
                           </Button>
                         </td>
                       </tr>
-                    ))}
+                    )) :
+                      <tr>
+                        <td colSpan={5} className="px-6 py-4 text-center text-foreground/70">
+                          No se encontraron eventos que coincidan con los filtros aplicados o no hay eventos registrados.
+                        </td>
+                      </tr>
+                    }
                   </tbody>
                 </table>
               </div>
