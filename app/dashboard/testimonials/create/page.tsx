@@ -115,7 +115,7 @@ export default function CreateTestimonyPage() {
             });
             await analyticsServices.createEvent({
                 metadata: {
-                    event_type: session?.user?.role === 'admin' ? 'approval' : 'submission',
+                    event_type: 'submission',
                     testimonio_id: response.data.data.id
                 }
             });
@@ -376,7 +376,7 @@ export default function CreateTestimonyPage() {
                                 isLoading={createTestimonyMutation.isPending}
                             // className="sm:flex-1"
                             >
-                                {session?.user?.role === 'admin' ? 'Publicar Testimonio' : 'Enviar para Revisión'}
+                                Enviar para Revisión
                             </Button>
 
                             <Button

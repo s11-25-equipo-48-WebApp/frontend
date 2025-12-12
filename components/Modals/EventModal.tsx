@@ -13,7 +13,6 @@ export default function EventModal({ id, onClose }: { id: string, onClose: () =>
   if (error) {
     return <div>Error loading event details.</div>;
   }
-  console.log(eventDetails);
 
   return (
     <div className='fixed inset-0 bg-black/30 flex justify-center items-center' onClick={onClose}>

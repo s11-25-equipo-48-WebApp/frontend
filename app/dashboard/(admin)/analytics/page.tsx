@@ -1,31 +1,31 @@
-"use client";
-import { useState } from "react";
-import { ChevronDown, Search, ChevronLeft, ChevronRight } from "lucide-react";
-import Button from "@/components/Button";
-import { useQuery } from "@tanstack/react-query";
-import { useAnalyticsServices } from "@/services/analytics.services";
-import { useStore } from "@/store/zustand";
-import { analyticsEvent } from "@/models/analytics.models";
-import EventModal from "@/components/Modals/EventModal";
+'use client';
+import { useState } from 'react';
+import { ChevronDown, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import Button from '@/components/Button';
+import { useQuery } from '@tanstack/react-query';
+import { useAnalyticsServices } from '@/services/analytics.services';
+import { useStore } from '@/store/zustand';
+import { analyticsEvent } from '@/models/analytics.models';
+import EventModal from '@/components/Modals/EventModal';
 export default function AnalyticsPage() {
   const [dateRange, setDateRange] = useState<{
     start_date: string;
     end_date: string;
-  }>({ start_date: "", end_date: "" });
+  }>({ start_date: '', end_date: '' });
   const [viewDetailsModal, setViewDetailsModal] = useState<{
     id: string | null;
   }>({ id: null });
-  const [dateRangeLabel, setDateRangeLabel] = useState("Sin filtro");
+  const [dateRangeLabel, setDateRangeLabel] = useState('Sin filtro');
   const [eventType, setEventType] = useState<
-    | "view"
-    | "submission"
-    | "approval"
-    | "rejection"
-    | "consent_given"
-    | "consent_revoked"
-    | ""
-  >("");
-  const [searchQuery, setSearchQuery] = useState("");
+    | 'view'
+    | 'submission'
+    | 'approval'
+    | 'rejection'
+    | 'consent_given'
+    | 'consent_revoked'
+    | ''
+  >('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const { currentOrganization } = useStore();
@@ -35,31 +35,31 @@ export default function AnalyticsPage() {
     const start = new Date();
     start.setDate(start.getDate() - days);
     return {
-      start_date: start.toISOString().split("T")[0],
-      end_date: end.toISOString().split("T")[0],
+      start_date: start.toISOString().split('T')[0],
+      end_date: end.toISOString().split('T')[0],
     };
   };
 
   const formatDateRangeLabel = (start: string, end: string) => {
-    if (!start || !end) return "Sin filtro";
+    if (!start || !end) return 'Sin filtro';
     const startDate = new Date(start);
     const endDate = new Date(end);
-    return `${startDate.toLocaleDateString("es-ES", {
-      day: "numeric",
-      month: "short",
-      year: "2-digit",
-    })} - ${endDate.toLocaleDateString("es-ES", {
-      day: "numeric",
-      month: "short",
-      year: "2-digit",
+    return `${startDate.toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'short',
+      year: '2-digit',
+    })} - ${endDate.toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'short',
+      year: '2-digit',
     })}`;
   };
 
   const dateRangeOptions = [
-    { label: "Sin filtro", value: { start_date: "", end_date: "" } },
-    { label: "Últimos 7 días", value: calculateDateRange(7) },
-    { label: "Últimos 30 días", value: calculateDateRange(30) },
-    { label: "Últimos 90 días", value: calculateDateRange(90) },
+    { label: 'Sin filtro', value: { start_date: '', end_date: '' } },
+    { label: 'Últimos 7 días', value: calculateDateRange(7) },
+    { label: 'Últimos 30 días', value: calculateDateRange(30) },
+    { label: 'Últimos 90 días', value: calculateDateRange(90) },
   ];
 
   const handleDateRangeSelect = (range: {
@@ -71,10 +71,10 @@ export default function AnalyticsPage() {
   };
 
   const eventTypeOptions = [
-    { value: "view", label: "Vista" },
-    { value: "submission", label: "Envío" },
-    { value: "approval", label: "Aprobación" },
-    { value: "rejection", label: "Rechazo" },
+    { value: 'view', label: 'Vista' },
+    { value: 'submission', label: 'Envío' },
+    { value: 'approval', label: 'Aprobación' },
+    { value: 'rejection', label: 'Rechazo' },
   ];
 
   const {
@@ -83,7 +83,7 @@ export default function AnalyticsPage() {
     error,
   } = useQuery({
     queryKey: [
-      "analyticsData",
+      'analyticsData',
       dateRange,
       eventType,
       searchQuery,
@@ -107,55 +107,48 @@ export default function AnalyticsPage() {
   });
   const totalEvents = analyticsData?.data?.length || 0;
   const percentOfApproval =
-    !isPending && analyticsData?.data > 0
+    !isPending && analyticsData?.data
       ? (analyticsData.data.filter(
-          (item: analyticsEvent) => item.tipo_evento === "approval"
-        ).length /
-          analyticsData.data.length) *
-        100
+        (item: analyticsEvent) => item.tipo_evento === 'approval'
+      ).length /
+        analyticsData.data.length) *
+      100
       : 0;
+
   const TestimonialsReceived =
-    !isPending && analyticsData?.data > 0
+    !isPending && analyticsData?.data
       ? analyticsData.data.filter(
-          (item: analyticsEvent) => item.tipo_evento === "submission"
-        ).length
+        (item: analyticsEvent) => item.tipo_evento === 'submission'
+      ).length
       : 0;
+
   const TestimonialsViews =
-    !isPending && analyticsData?.data > 0
+    !isPending && analyticsData?.data
       ? analyticsData.data.filter(
-          (item: analyticsEvent) => item.tipo_evento === "view"
-        ).length
+        (item: analyticsEvent) => item.tipo_evento === 'view'
+      ).length
       : 0;
-  const percentOfConsent =
-    !isPending && analyticsData?.data > 0
-      ? (analyticsData.data.filter(
-          (item: analyticsEvent) => item.tipo_evento === "consent_given"
-        ).length /
-          analyticsData.data.length) *
-        100
-      : 0;
-  console.log(percentOfApproval);
 
   const stats = [
     {
-      label: "Testimonios publicados",
+      label: 'Testimonios publicados',
       value: totalEvents,
-      color: "from-green-400 to-green-600",
+      color: 'from-green-400 to-green-600',
     },
     {
-      label: "Testimonios recibidos",
+      label: 'Testimonios recibidos',
       value: TestimonialsReceived,
-      color: "from-blue-400 to-blue-600",
+      color: 'from-blue-400 to-blue-600',
     },
     {
-      label: "Tasa de aprobación",
-      value: `${percentOfApproval.toFixed(2)}%`,
-      color: "from-orange-400 to-orange-600",
+      label: 'Tasa de aprobación',
+      value: `${(percentOfApproval ?? 0).toFixed(2)}%`,
+      color: 'from-orange-400 to-orange-600',
     },
     {
-      label: "Visualizaciones",
+      label: 'Visualizaciones',
       value: TestimonialsViews,
-      color: "from-slate-700 to-slate-900",
+      color: 'from-slate-700 to-slate-900',
     },
   ];
   return (
@@ -172,16 +165,14 @@ export default function AnalyticsPage() {
                   <button
                     key={index}
                     onClick={() => handleDateRangeSelect(option.value)}
-                    className={`w-full text-left px-4 py-3 hover:bg-background transition-colors ${
-                      dateRange.start_date === option.value.start_date &&
+                    className={`w-full text-left px-4 py-3 hover:bg-background transition-colors ${dateRange.start_date === option.value.start_date &&
                       dateRange.end_date === option.value.end_date
-                        ? "text-winered font-semibold"
-                        : "text-foreground"
-                    } ${index === 0 ? "rounded-t-lg" : ""} ${
-                      index === dateRangeOptions.length - 1
-                        ? "rounded-b-lg"
-                        : ""
-                    }`}
+                      ? 'text-winered font-semibold'
+                      : 'text-foreground'
+                      } ${index === 0 ? 'rounded-t-lg' : ''} ${index === dateRangeOptions.length - 1
+                        ? 'rounded-b-lg'
+                        : ''
+                      }`}
                   >
                     {option.label}
                   </button>
@@ -194,20 +185,19 @@ export default function AnalyticsPage() {
               <span className="text-foreground">
                 {eventType
                   ? eventTypeOptions.find((opt) => opt.value === eventType)
-                      ?.label
-                  : "Tipo de evento"}
+                    ?.label
+                  : 'Tipo de evento'}
               </span>
               <ChevronDown className="w-4 h-4 text-foreground/60" />
 
               {/* Dropdown Menu */}
               <div className="absolute top-full left-0 mt-2 w-48 bg-card border border-foreground/10 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
                 <button
-                  onClick={() => setEventType("")}
-                  className={`w-full text-left px-4 py-3 hover:bg-background transition-colors first:rounded-t-lg ${
-                    eventType === ""
-                      ? "text-winered font-semibold"
-                      : "text-foreground"
-                  }`}
+                  onClick={() => setEventType('')}
+                  className={`w-full text-left px-4 py-3 hover:bg-background transition-colors first:rounded-t-lg ${eventType === ''
+                    ? 'text-winered font-semibold'
+                    : 'text-foreground'
+                    }`}
                 >
                   Todos los eventos
                 </button>
@@ -217,11 +207,10 @@ export default function AnalyticsPage() {
                     onClick={() =>
                       setEventType(option.value as string as typeof eventType)
                     }
-                    className={`w-full text-left px-4 py-3 hover:bg-background transition-colors ${
-                      eventType === option.value
-                        ? "text-winered font-semibold"
-                        : "text-foreground"
-                    }`}
+                    className={`w-full text-left px-4 py-3 hover:bg-background transition-colors ${eventType === option.value
+                      ? 'text-winered font-semibold'
+                      : 'text-foreground'
+                      }`}
                   >
                     {option.label}
                   </button>
@@ -255,13 +244,11 @@ export default function AnalyticsPage() {
                       setLimit(value);
                       setCurrentPage(1);
                     }}
-                    className={`w-full text-left px-4 py-3 hover:bg-background transition-colors ${
-                      limit === value
-                        ? "text-winered font-semibold"
-                        : "text-foreground"
-                    } ${value === 10 ? "rounded-t-lg" : ""} ${
-                      value === 100 ? "rounded-b-lg" : ""
-                    }`}
+                    className={`w-full text-left px-4 py-3 hover:bg-background transition-colors ${limit === value
+                      ? 'text-winered font-semibold'
+                      : 'text-foreground'
+                      } ${value === 10 ? 'rounded-t-lg' : ''} ${value === 100 ? 'rounded-b-lg' : ''
+                      }`}
                   >
                     {value} items
                   </button>
@@ -271,7 +258,7 @@ export default function AnalyticsPage() {
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((stat, index) => (
+          {analyticsData && stats.map((stat, index) => (
             <div
               key={index}
               className={`bg-gradient-to-br ${stat.color} p-6 rounded-2xl text-white shadow-lg`}
@@ -310,8 +297,8 @@ export default function AnalyticsPage() {
                 </thead>
                 <tbody>
                   {!error &&
-                  analyticsData?.data &&
-                  analyticsData.data.length > 0 ? (
+                    analyticsData?.data &&
+                    analyticsData.data.length > 0 ? (
                     analyticsData.data.map(
                       (item: analyticsEvent, index: number) => (
                         <tr
@@ -334,15 +321,15 @@ export default function AnalyticsPage() {
                           <td className="px-6 py-4">
                             <div className="px-4 py-2 border border-foreground/10 rounded-lg text-foreground/70 inline-block">
                               {new Date(item.fecha_hora)
-                                .toLocaleString("es-ES", {
+                                .toLocaleString('es-ES', {
                                   hour12: false,
-                                  year: "numeric",
-                                  month: "2-digit",
-                                  day: "2-digit",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
+                                  year: 'numeric',
+                                  month: '2-digit',
+                                  day: '2-digit',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
                                 })
-                                .replace(",", " ")}
+                                .replace(',', ' ')}
                             </div>
                           </td>
                           <td className="px-6 py-4">
@@ -403,11 +390,10 @@ export default function AnalyticsPage() {
                           <button
                             key={page}
                             onClick={() => setCurrentPage(page)}
-                            className={`w-8 h-8 rounded-lg font-semibold transition-colors ${
-                              currentPage === page
-                                ? "bg-winered text-white"
-                                : "border border-foreground/10 text-foreground/60 hover:bg-background"
-                            }`}
+                            className={`w-8 h-8 rounded-lg font-semibold transition-colors ${currentPage === page
+                              ? 'bg-winered text-white'
+                              : 'border border-foreground/10 text-foreground/60 hover:bg-background'
+                              }`}
                           >
                             {page}
                           </button>

@@ -10,6 +10,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { testimonialService } from '@/services/testimonial.service';
 import { toast } from 'react-toastify';
 import { CopyX } from 'lucide-react';
+import { useAnalyticsServices } from '@/services/analytics.services';
 
 interface TestimonialProps {
   params: Promise<{
@@ -44,7 +45,7 @@ export default function Testimonials({ params }: TestimonialProps) {
   const [isApproving, setIsApproving] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-
+  const analyticsServices = useAnalyticsServices();
   if (isLoading) {
     return (
       <div className="p-6 flex flex-col items-center justify-center space-y-6">
@@ -79,6 +80,12 @@ export default function Testimonials({ params }: TestimonialProps) {
         accessToken,
         'aprobado'
       );
+      await analyticsServices.createEvent({
+        metadata: {
+          event_type: 'approval',
+          testimonio_id: testimonial.id,
+        },
+      });
       queryClient.invalidateQueries({ queryKey: ['testimonial', paramsState] });
       toast.success('Testimonio aprobado');
       // Redirigir a dashboard y hacer reload
@@ -153,4 +160,4 @@ export default function Testimonials({ params }: TestimonialProps) {
       saving={isSaving}
     />
   );
-}
+};
