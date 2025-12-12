@@ -32,13 +32,6 @@ export default function DashboardStats() {
       roles: ["admin"] as const,
     },
     {
-      title: "Tasa de consentimiento",
-      value: `${metrics?.consentRate ?? 0}%`,
-      color: "bg-purple-500",
-      showViewAll: false,
-      roles: ["admin"] as const,
-    },
-    {
       title: "Visualizaciones",
       value: metrics?.views ?? 0,
       color: "bg-gray-800",
@@ -58,7 +51,7 @@ export default function DashboardStats() {
   if (isLoading) {
     const skeletonCount = cardsItems.length || 2;
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: skeletonCount }).map((_, i) => (
           <div
             key={i}
@@ -76,7 +69,7 @@ export default function DashboardStats() {
   return (
     <div
       className={`grid grid-cols-1 md:grid-cols-2 ${
-        cardsItems.length > 2 ? "lg:grid-cols-5" : "lg:grid-cols-2"
+        cardsItems.length > 2 ? "lg:grid-cols-4" : "lg:grid-cols-2"
       } gap-4`}
     >
       {cardsItems.map((card, index) => (

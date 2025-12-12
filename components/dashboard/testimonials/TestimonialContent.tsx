@@ -3,7 +3,6 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import Button from '@/components/Button';
-import CheckboxSuccess from '@/public/checkbox-succes.svg';
 import { Testimonial } from '@/services/testimonial.service';
 import { PencilLine } from 'lucide-react';
 import { useCategories } from '@/hooks/useCategories';
@@ -15,7 +14,6 @@ interface TestimonialContentProps {
   onApprove?: () => void;
   onReject?: () => void;
   onSaveChanges?: (newBody: string) => void;
-  // nuevos flags
   approving?: boolean;
   rejecting?: boolean;
   saving?: boolean;
@@ -28,9 +26,6 @@ const getVideoId = (url: string): string | null => {
   return match ? match[1] : null;
 };
 
-/**
- * Normaliza status localmente por si el componente recibe valores en inglés.
- */
 const normalizeStatusLocal = (
   status?: string | null
 ): 'pendiente' | 'aprobado' | 'rechazado' => {
@@ -53,7 +48,6 @@ export default function TestimonialContent({
   saving = false,
 }: TestimonialContentProps) {
   const [openModal, setOpenModal] = useState(false);
-  // Soporte para media_type (snake) o mediaType (camel)
   const mediaType =
     (testimonial as any).media_type || (testimonial as any).mediaType;
   const mediaUrl =
@@ -72,9 +66,7 @@ export default function TestimonialContent({
   const body = testimonial.body || testimonial.content || '';
   const createdDate = testimonial.created_at || testimonial.createdAt;
 
-  // Normalizar status localmente (para evitar discrepancias idioma)
   const status = normalizeStatusLocal(testimonial.status);
-  // Determinar qué botones mostrar según el status
   const showApproveButton = status !== 'aprobado';
   const showRejectButton = status === 'pendiente';
 
@@ -99,7 +91,7 @@ export default function TestimonialContent({
       </div>
 
       <div className="p-6 space-y-6">
-        {/* Layout para VIDEO */}
+        {/* Layout VIDEO */}
         {isVideo && videoId ? (
           <>
             <div className="w-full">
@@ -118,7 +110,6 @@ export default function TestimonialContent({
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Detalles - más grandes */}
               <div className="space-y-6">
                 <h3 className="font-bold text-2xl">Detalles</h3>
                 <div className="space-y-4 text-lg">
@@ -141,8 +132,6 @@ export default function TestimonialContent({
                   </p>
                 </div>
               </div>
-
-              {/* Descripción */}
               <div>
                 <h3 className="font-bold text-xl mb-4 flex items-center">
                   <span>Descripción del testimonio</span>
@@ -161,7 +150,7 @@ export default function TestimonialContent({
             </div>
           </>
         ) : isImage ? (
-          /* Layout para IMAGEN */
+          /* Layout IMAGEN */
           <>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="text-md lg:text-xl lg:col-span-2 space-y-6 flex flex-col justify-center">
@@ -202,7 +191,7 @@ export default function TestimonialContent({
               </div>
             </div>
 
-            {/* Testimonio en texto para imágenes */}
+            {/* Layout solo texto*/}
             <div className="pt-8">
               <h3 className="font-bold text-xl mb-4 flex items-center">
                 <span>Testimonio en texto</span>
@@ -265,7 +254,7 @@ export default function TestimonialContent({
           </div>
         )}
 
-        <div className="flex ml-auto mt-8 lg:mt-14 p-4 rounded-2xl bg-btn-success/25 w-fit gap-3 items-center">
+        {/* <div className="flex ml-auto mt-8 lg:mt-14 p-4 rounded-2xl bg-btn-success/25 w-fit gap-3 items-center">
           <Image
             src={CheckboxSuccess}
             alt="Checkbox success"
@@ -276,9 +265,8 @@ export default function TestimonialContent({
           <label className="font-bold pr-10">
             Testimonio con consentimiento
           </label>
-        </div>
+        </div> */}
 
-        {/* Botones según el status */}
         {isAdmin && (
           <div className="flex gap-5 ml-auto justify-end pt-8">
             {showApproveButton ? (
