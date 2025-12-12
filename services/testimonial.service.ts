@@ -239,7 +239,7 @@ export const testimonialService = {
     limit: number = 50
   ): Promise<Testimonial[]> => {
     const response = await api.get<
-      APIResponse<PaginatedResponse<TestimonialAPIResponse>>
+      APIResponse<TestimonialAPIResponse[]>
     >('/user/me/testimonios/pending', {
       params: { page, limit },
       headers: {
