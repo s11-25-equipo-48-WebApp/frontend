@@ -100,6 +100,30 @@ function normalizeStatus(
 }
 
 export const testimonialService = {
+  /**
+   * Obtiene todos los testimonios de una organización (sin filtro de estado)
+   */
+  getAll: async (
+    organizationId: string,
+    accessToken: string,
+    page: number = 1,
+    limit: number = 50
+  ): Promise<Testimonial[]> => {
+    const response = await api.get<
+      APIResponse<PaginatedResponse<TestimonialAPIResponse>>
+    >(`/organizations/${organizationId}/testimonios`, {
+      params: { page, limit },
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const apiTestimonials = response.data.data.data || [];
+    return apiTestimonials
+      .map(transformAPIToTestimonial)
+      .map((t) => ({ ...t, status: normalizeStatus(t.status) || "pendiente" }));
+  },
+
   getPending: async (
     organizationId: string,
     accessToken: string,
@@ -231,10 +255,7 @@ export const testimonialService = {
   },
 
   /*Elimina un testimonio del usuario autenticado (para editores)*/
-  deleteForUser: async (
-    id: string,
-    accessToken: string
-  ): Promise<void> => {
+  deleteForUser: async (id: string, accessToken: string): Promise<void> => {
     await api.delete(`/user/me/testimonios/${id}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -242,9 +263,6 @@ export const testimonialService = {
     });
   },
 
-  /**
-   * Cambiar el status de un testimonio usando el endpoint correcto
-   */
   updateStatus: async (
     organizationId: string,
     id: string,
@@ -265,9 +283,6 @@ export const testimonialService = {
     return { ...t, status: normalizeStatus(t.status) || "pendiente" };
   },
 
-  /**
-   * Update a testimonial fields (partial update)
-   */
   update: async (
     organizationId: string,
     id: string,
