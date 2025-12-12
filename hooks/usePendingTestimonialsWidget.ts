@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
-import { useStore } from "@/store/zustand";
-import { testimonialService } from "@/services/testimonial.service";
+import { useQuery } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
+import { useStore } from '@/store/zustand';
+import { testimonialService } from '@/services/testimonial.service';
 
 /**
  * Hook específico para el widget de testimonios pendientes en el dashboard
@@ -11,8 +11,8 @@ export const usePendingTestimonialsWidget = (limit: number = 4) => {
   const { data: session } = useSession();
   const { currentOrganization, role: storedRole } = useStore();
 
-  const userRole = storedRole?.toLowerCase() || "";
-  const isAdmin = userRole === "admin";
+  const userRole = storedRole?.toLowerCase() || '';
+  const isAdmin = userRole === 'admin';
 
   const {
     data: rawTestimonials = [],
@@ -20,9 +20,9 @@ export const usePendingTestimonialsWidget = (limit: number = 4) => {
     error,
   } = useQuery({
     queryKey: [
-      "testimonials",
-      "pending-widget",
-      isAdmin ? currentOrganization : "user",
+      'testimonials',
+      'pending-widget',
+      isAdmin ? currentOrganization : 'user',
       limit,
     ],
     queryFn: async () => {
@@ -48,7 +48,7 @@ export const usePendingTestimonialsWidget = (limit: number = 4) => {
   });
 
   // Filtrar solo testimonios pendientes
-  const testimonials = rawTestimonials.filter((t) => t.status === "pendiente");
+  const testimonials = rawTestimonials.filter((t) => t.status === 'pendiente');
 
   return {
     testimonials,
