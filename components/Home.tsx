@@ -1,15 +1,15 @@
-"use client";
-import { useStore } from "@/store/zustand";
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
-import Button from "@/components/Button";
-import UserInfo from "@/components/UserInfo";
-import OrganizationModal from "@/components/Modals/OrganizationModal";
-import DeleteModal from "@/components/Modals/DeleteModal";
-import api from "@/services/config";
-import { useState, useEffect } from "react";
-import useRefreshAccessTokenClient from "@/hooks/useRefreshToken.client";
-import { SquarePen, Users, Trash2 } from "lucide-react";
+'use client';
+import { useStore } from '@/store/zustand';
+import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
+import Button from '@/components/Button';
+import UserInfo from '@/components/UserInfo';
+import OrganizationModal from '@/components/Modals/OrganizationModal';
+import DeleteModal from '@/components/Modals/DeleteModal';
+import api from '@/services/config';
+import { useState, useEffect } from 'react';
+import useRefreshAccessTokenClient from '@/hooks/useRefreshToken.client';
+import { SquarePen, Users, Trash2 } from 'lucide-react';
 interface Organization {
   id: string;
   name: string;
@@ -20,7 +20,7 @@ interface Organization {
 }
 
 export default function Home() {
-  const { setCurrentOrganization } = useStore();
+  const { setCurrentOrganization, setRole } = useStore();
   const { data: session } = useSession();
   const refreshAccessToken = useRefreshAccessTokenClient();
 
@@ -39,7 +39,7 @@ export default function Home() {
       setLoading(true);
       setError(null);
 
-      const { data: resp } = await api.get("/organization/my-organizations", {
+      const { data: resp } = await api.get('/organization/my-organizations', {
         headers: {
           Authorization: `Bearer ${session?.user?.accessToken}`,
         },
@@ -55,8 +55,8 @@ export default function Home() {
         setOrganizations([]);
       }
     } catch (err) {
-      console.error("Error fetching organizations:", err);
-      setError(err instanceof Error ? err.message : "Error desconocido");
+      console.error('Error fetching organizations:', err);
+      setError(err instanceof Error ? err.message : 'Error desconocido');
       setOrganizations([]);
     } finally {
       setLoading(false);
@@ -72,7 +72,8 @@ export default function Home() {
   const toggleOrganization = (organization: Organization) => {
     // Guardamos únicamente el ID (string) para mantener compatibilidad con el resto del código
     setCurrentOrganization(organization.id);
-    redirect("/dashboard");
+    setRole(organization.role);
+    redirect('/dashboard');
   };
 
   const handleCreateNew = () => {
@@ -139,33 +140,32 @@ export default function Home() {
   const formatDate = (dateString: string) => {
     const d = new Date(dateString);
     if (isNaN(d.getTime())) return dateString;
-    const day = String(d.getDate()).padStart(2, "0");
-    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
     const year = d.getFullYear();
     return `${day}/${month}/${year}`;
   };
 
   // Función auxiliar para verificar si el usuario es admin
   const isAdmin = (role: string) => {
-    return role.toLowerCase() === "admin";
+    return role.toLowerCase() === 'admin';
   };
 
   return (
     <main className="min-h-screen bg-background">
-      
 
       <nav className="border-b border-gray-200 bg-white sticky top-0 z-50 shadow-sm">
-  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-    <div className="flex h-16 items-center justify-between">
-      <div className="flex items-center gap-4">
-        <h1 className="text-xl font-bold text-foreground">Mi App</h1>
-      </div>
-      <div className="flex items-center gap-4">
-        <UserInfo />
-      </div>
-    </div>
-  </div>
-</nav>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1 className="text-xl font-bold text-foreground">Mi App</h1>
+            </div>
+            <div className="flex items-center gap-4">
+              <UserInfo />
+            </div>
+          </div>
+        </div>
+      </nav>
 
       {session?.user ? (
         <div className="mx-auto max-w-7xl px-4 pb-8">
@@ -205,8 +205,8 @@ export default function Home() {
                   </h3>
                   <p className="text-foreground/60 mb-6">
                     {error
-                      ? "No se pudieron cargar las organizaciones. Intenta nuevamente."
-                      : "Comienza creando tu primera organización para empezar a trabajar."}
+                      ? 'No se pudieron cargar las organizaciones. Intenta nuevamente.'
+                      : 'Comienza creando tu primera organización para empezar a trabajar.'}
                   </p>
                 </div>
               </div>

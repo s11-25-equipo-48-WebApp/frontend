@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useStore } from "@/store/zustand";
-import useRefreshAccessTokenClient from "@/hooks/useRefreshToken.client";
+import React, { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useStore } from '@/store/zustand';
+import useRefreshAccessTokenClient from '@/hooks/useRefreshToken.client';
 
 export default function AdminLayout({
   children,
@@ -16,15 +16,16 @@ export default function AdminLayout({
   const router = useRouter();
   const currentOrganization = useStore((s) => s.currentOrganization);
   const setCurrentOrganization = useStore((s) => s.setCurrentOrganization);
+  const role = useStore((s) => s.role);
   const [checking, setChecking] = useState(true);
   const [triedRefresh, setTriedRefresh] = useState(false);
 
   useEffect(() => {
     // Esperar a que session esté listo
-    if (status === "loading") return;
+    if (status === 'loading') return;
 
     if (!session) {
-      router.push("/auth/login");
+      router.push('/auth/login');
       return;
     }
 
@@ -32,16 +33,11 @@ export default function AdminLayout({
     const organizations = (session.user as any)?.organizations as
       | Array<any>
       | undefined;
-    let isAdminForOrg = false;
-
-    if (organizations && currentOrganization) {
-      const org = organizations.find((o) => o.id === currentOrganization);
-      if (org && org.role === "admin") isAdminForOrg = true;
-    }
+    let isAdminForOrg = role === 'admin';
 
     // Si no hay organización seleccionada, intentar seleccionar una admin si existe
     if (!currentOrganization && organizations && organizations.length > 0) {
-      const adminOrg = organizations.find((o) => o.role === "admin");
+      const adminOrg = organizations.find((o) => o.role === 'admin');
       if (adminOrg) {
         setCurrentOrganization(adminOrg.id);
         isAdminForOrg = true;
@@ -63,11 +59,10 @@ export default function AdminLayout({
       })();
       return;
     }
-
     // Fallback: si el usuario no es admin en la organización seleccionada, bloquear
     if (!isAdminForOrg) {
       console.error(
-        "Unauthorized access attempt for organization:",
+        'Unauthorized access attempt for organization:',
         currentOrganization,
         {
           userId: session.user?.id,
@@ -77,7 +72,7 @@ export default function AdminLayout({
           })),
         }
       );
-      router.push("/dashboard?error=unauthorized");
+      router.push('/dashboard?error=unauthorized');
       return;
     }
 

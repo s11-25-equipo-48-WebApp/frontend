@@ -1,8 +1,6 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { useStore } from '@/store/zustand';
 import {
   LayoutDashboard,
   FileText,
@@ -12,36 +10,11 @@ import {
   Settings,
   Users,
 } from 'lucide-react';
+import { useStore } from '@/store/zustand';
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { data: session } = useSession();
-  const currentOrganization = useStore((s) => s.currentOrganization);
-
-  // Obtener el rol del usuario en la organización actual
-  const getUserRole = (): 'admin' | 'editor' | null => {
-    if (!session?.user?.organizations || !currentOrganization) {
-      return null;
-    }
-
-    const organizations = session.user.organizations as Array<{
-      id: string;
-      name: string;
-      role: string;
-    }>;
-
-    const currentOrg = organizations.find((org) => org.id === currentOrganization);
-    if (!currentOrg) {
-      return null;
-    }
-    if (currentOrg.role === 'admin' || currentOrg.role === 'editor') {
-      return currentOrg.role as 'admin' | 'editor';
-    }
-
-    return null;
-  };
-
-  const userRole = getUserRole();
+  const { role: userRole } = useStore();
 
   const allMenuItems = [
     {
@@ -59,7 +32,7 @@ export default function Sidebar() {
       badge: 'NEW',
       iconColor: 'text-pink-500',
       activeBg: 'bg-pink-100',
-      roles: ['admin'] as const, 
+      roles: ['admin'] as const,
     },
     {
       href: '/dashboard/testimonials/create',
@@ -67,7 +40,7 @@ export default function Sidebar() {
       label: 'Crear testimonio',
       iconColor: 'text-teal-500',
       activeBg: 'bg-teal-100',
-      roles: ['admin', 'editor'] as const, 
+      roles: ['admin', 'editor'] as const,
     },
     {
       href: '/dashboard/analytics',
@@ -75,7 +48,7 @@ export default function Sidebar() {
       label: 'Analytics',
       iconColor: 'text-red-500',
       iconBg: 'bg-red-50',
-      roles: ['admin'] as const, 
+      roles: ['admin'] as const,
     },
     {
       href: '/dashboard/library',
@@ -83,7 +56,7 @@ export default function Sidebar() {
       label: 'Biblioteca multimedia',
       iconColor: 'text-blue-500',
       activeBg: 'bg-blue-100',
-      roles: ['admin', 'editor'] as const, 
+      roles: ['admin', 'editor'] as const,
     },
     {
       href: '/dashboard/categories',
@@ -127,23 +100,21 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 group ${
-                isActive ? 'bg-[#BCDBB8] shadow-sm' : 'hover:bg-white/50'
-              }`}
+              className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 group ${isActive ? 'bg-[#BCDBB8] shadow-sm' : 'hover:bg-white/50'
+                }`}
             >
               {/* Icon Container */}
               <div
-                className={`p-1 rounded ${isActive ? '' : ''} ${item.iconColor}`}
+                className={`p-1 rounded ${item.iconColor}`}
               >
                 <Icon size={26} />
               </div>
 
               <span
-                className={`flex-1 text-sm font-semibold ${
-                  isActive
-                    ? 'text-gray-800'
-                    : 'text-gray-500 group-hover:text-gray-700'
-                }`}
+                className={`flex-1 text-sm font-semibold ${isActive
+                  ? 'text-gray-800'
+                  : 'text-gray-500 group-hover:text-gray-700'
+                  }`}
               >
                 {item.label}
               </span>

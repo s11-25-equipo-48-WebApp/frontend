@@ -32,6 +32,8 @@ type SaveDraftInput = Omit<TestimonyDraft, 'savedAt'> & { id?: string };
 interface store {
   currentOrganization: string | null;
   setCurrentOrganization: (_organization: string | null) => void;
+  role: string;
+  setRole: (_role: string) => void;
   drafts: TestimonyDraft[];
   saveDraft: (_draft: SaveDraftInput) => string;
   deleteDraft: (_id: string) => void;
@@ -42,6 +44,8 @@ export const useStore = create<store>()(
   persist(
     (set, get) => ({
       currentOrganization: null,
+      role: '',
+      setRole: (role: string) => set({ role }),
       // Ahora aceptamos y guardamos el ID (string) o null
       setCurrentOrganization: (organizationId: string | null) =>
         set({ currentOrganization: organizationId }),
