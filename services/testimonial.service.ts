@@ -1,5 +1,5 @@
-import api from "@/services/config";
-import { transformAPIToTestimonial } from "@/utils/testimonial.utils";
+import api from '@/services/config';
+import { transformAPIToTestimonial } from '@/utils/testimonial.utils';
 
 export interface Tag {
   id: string;
@@ -19,7 +19,7 @@ export interface TestimonialAPIResponse {
   } | null;
   tags: Tag[];
   media_url: string | null;
-  media_type: "image" | "video" | "none";
+  media_type: 'image' | 'video' | 'none';
   author_name: string;
   author_email: string;
   created_by_user_id: string | null;
@@ -36,7 +36,7 @@ export interface TestimonialAPIResponse {
   } | null;
   approved_by: string | null;
   approved_at: string | null;
-  status: "pendiente" | "aprobado" | "rechazado";
+  status: 'pendiente' | 'aprobado' | 'rechazado';
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -48,7 +48,7 @@ export interface Testimonial {
   title: string;
   categoryName: string;
   categoryId?: string;
-  mediaType: "image" | "video" | "none";
+  mediaType: 'image' | 'video' | 'none';
   content: string;
   createdAt: string;
   formattedDate: string;
@@ -57,7 +57,7 @@ export interface Testimonial {
 
   // Campos adicionales (aliases / datos crudos de la API)
   media_url?: string | null;
-  media_type?: "image" | "video" | "none";
+  media_type?: 'image' | 'video' | 'none';
   image?: string | null;
   email?: string | null;
   category_id?: string | null;
@@ -65,7 +65,7 @@ export interface Testimonial {
   received?: string | null;
   author?: string | null;
   body?: string;
-  status?: "pendiente" | "aprobado" | "rechazado";
+  status?: 'pendiente' | 'aprobado' | 'rechazado';
 }
 
 interface PaginatedMeta {
@@ -90,12 +90,12 @@ interface APIResponse<T> {
  */
 function normalizeStatus(
   status?: string | null
-): "pendiente" | "aprobado" | "rechazado" | undefined {
+): 'pendiente' | 'aprobado' | 'rechazado' | undefined {
   if (!status) return undefined;
   const s = String(status).trim().toLowerCase();
-  if (s === "approved" || s === "aprobado") return "aprobado";
-  if (s === "rejected" || s === "rechazado") return "rechazado";
-  if (s === "pending" || s === "pendiente") return "pendiente";
+  if (s === 'approved' || s === 'aprobado') return 'aprobado';
+  if (s === 'rejected' || s === 'rechazado') return 'rechazado';
+  if (s === 'pending' || s === 'pendiente') return 'pendiente';
   return undefined;
 }
 
@@ -121,7 +121,7 @@ export const testimonialService = {
     const apiTestimonials = response.data.data.data || [];
     return apiTestimonials
       .map(transformAPIToTestimonial)
-      .map((t) => ({ ...t, status: normalizeStatus(t.status) || "pendiente" }));
+      .map((t) => ({ ...t, status: normalizeStatus(t.status) || 'pendiente' }));
   },
 
   getPending: async (
@@ -139,10 +139,10 @@ export const testimonialService = {
       },
     });
 
-    const apiTestimonials = response.data.data.data || [];
+    const apiTestimonials = response.data.data || [];
     return apiTestimonials
       .map(transformAPIToTestimonial)
-      .map((t) => ({ ...t, status: normalizeStatus(t.status) || "pendiente" }));
+      .map((t) => ({ ...t, status: normalizeStatus(t.status) || 'pendiente' }));
   },
 
   getPublic: async (
@@ -166,10 +166,10 @@ export const testimonialService = {
       },
     });
 
-    const apiTestimonials = response.data.data.data || [];
+    const apiTestimonials = response.data.data || [];
     return apiTestimonials
       .map(transformAPIToTestimonial)
-      .map((t) => ({ ...t, status: normalizeStatus(t.status) || "pendiente" }));
+      .map((t) => ({ ...t, status: normalizeStatus(t.status) || 'pendiente' }));
   },
 
   getRecent: async (
@@ -202,7 +202,7 @@ export const testimonialService = {
     );
 
     const t = transformAPIToTestimonial(response.data.data);
-    return { ...t, status: normalizeStatus(t.status) || "pendiente" };
+    return { ...t, status: normalizeStatus(t.status) || 'pendiente' };
   },
 
   deleteMany: async (
@@ -241,17 +241,17 @@ export const testimonialService = {
   ): Promise<Testimonial[]> => {
     const response = await api.get<
       APIResponse<PaginatedResponse<TestimonialAPIResponse>>
-    >(`/user/me/testimonios/pending`, {
+    >('/user/me/testimonios/pending', {
       params: { page, limit },
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     });
 
-    const apiTestimonials = response.data.data.data || [];
+    const apiTestimonials = response.data.data || [];
     return apiTestimonials
       .map(transformAPIToTestimonial)
-      .map((t) => ({ ...t, status: normalizeStatus(t.status) || "pendiente" }));
+      .map((t) => ({ ...t, status: normalizeStatus(t.status) || 'pendiente' }));
   },
 
   /*Elimina un testimonio del usuario autenticado (para editores)*/
@@ -267,7 +267,7 @@ export const testimonialService = {
     organizationId: string,
     id: string,
     accessToken: string,
-    status: "aprobado" | "rechazado" | "pendiente"
+    status: 'aprobado' | 'rechazado' | 'pendiente'
   ): Promise<Testimonial> => {
     const response = await api.patch<APIResponse<TestimonialAPIResponse>>(
       `/organizations/${organizationId}/testimonios/${id}/status`,
@@ -280,7 +280,7 @@ export const testimonialService = {
     );
 
     const t = transformAPIToTestimonial(response.data.data);
-    return { ...t, status: normalizeStatus(t.status) || "pendiente" };
+    return { ...t, status: normalizeStatus(t.status) || 'pendiente' };
   },
 
   update: async (
@@ -300,6 +300,6 @@ export const testimonialService = {
     );
 
     const t = transformAPIToTestimonial(response.data.data);
-    return { ...t, status: normalizeStatus(t.status) || "pendiente" };
+    return { ...t, status: normalizeStatus(t.status) || 'pendiente' };
   },
 };

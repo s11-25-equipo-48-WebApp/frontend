@@ -102,6 +102,7 @@ export default function CreateTestimonyPage() {
                 category_id: data.category_id,
                 email: data.email,
                 media_type: mediaType,
+                status: 'pendiente',
                 ...(data.author && { author: data.author }),
                 ...(data.tags && data.tags.length > 0 && { tags: data.tags }),
                 ...(media_url && { media_url }),
@@ -369,6 +370,8 @@ export default function CreateTestimonyPage() {
                                 type="submit"
                                 variant="action"
                                 color='green'
+                                className="w-full sm:w-fit sm:px-8"
+
                                 // size="fit"
                                 isLoading={createTestimonyMutation.isPending}
                             // className="sm:flex-1"
@@ -379,6 +382,7 @@ export default function CreateTestimonyPage() {
                             <Button
                                 type="button"
                                 variant="action"
+                                className="w-full sm:w-fit sm:px-8"
                                 color='orange'
                                 onClick={async () => {
                                     const formData = methods.getValues();
@@ -439,7 +443,6 @@ export default function CreateTestimonyPage() {
                                         console.error(error);
                                     }
                                 }}
-                                className="sm:w-auto sm:px-8"
                             >
                                 Guardar en biblioteca
                             </Button>

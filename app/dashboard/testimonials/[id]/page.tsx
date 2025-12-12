@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useTestimonialById } from "@/hooks/useTestimonialById";
-import TestimonialContent from "@/components/dashboard/testimonials/TestimonialContent";
-import { useStore } from "@/store/zustand";
-import { useQueryClient } from "@tanstack/react-query";
-import { testimonialService } from "@/services/testimonial.service";
-import { toast } from "react-toastify";
-import { CopyX } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useTestimonialById } from '@/hooks/useTestimonialById';
+import TestimonialContent from '@/components/dashboard/testimonials/TestimonialContent';
+import { useStore } from '@/store/zustand';
+import { useQueryClient } from '@tanstack/react-query';
+import { testimonialService } from '@/services/testimonial.service';
+import { toast } from 'react-toastify';
+import { CopyX } from 'lucide-react';
 
 interface TestimonialProps {
   params: Promise<{
@@ -23,6 +23,7 @@ export default function Testimonials({ params }: TestimonialProps) {
   const [paramsState, setParamsState] = useState<string | null>(null);
   // currentOrganization es el ID (string | null)
   const organizationIdFromStore = useStore((s) => s.currentOrganization);
+  const role = useStore((s) => s.role);
   const queryClient = useQueryClient();
 
   // Manejo de params asincrónico
@@ -31,17 +32,14 @@ export default function Testimonials({ params }: TestimonialProps) {
   }, [params]);
 
   const { testimonial, isLoading, error } = useTestimonialById(
-    paramsState || ""
+    paramsState || ''
   );
 
-  const accessToken = session?.user?.accessToken || "";
-  const organizationId = organizationIdFromStore || "";
+  const accessToken = session?.user?.accessToken || '';
+  const organizationId = organizationIdFromStore || '';
 
   // Determinar si el usuario es Admin
-  const isAdmin =
-    (session?.user?.role === "admin" ||
-      session?.user?.organizations?.some((org) => org.role === "admin")) ??
-    false;
+  const isAdmin = role === 'admin';
 
   const [isApproving, setIsApproving] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
@@ -70,7 +68,7 @@ export default function Testimonials({ params }: TestimonialProps) {
 
   const handleApprove = async () => {
     if (!organizationId || !accessToken || !testimonial?.id) {
-      toast.error("Falta organización o token para aprobar.");
+      toast.error('Falta organización o token para aprobar.');
       return;
     }
     try {
@@ -79,16 +77,16 @@ export default function Testimonials({ params }: TestimonialProps) {
         organizationId,
         testimonial.id,
         accessToken,
-        "aprobado"
+        'aprobado'
       );
-      queryClient.invalidateQueries({ queryKey: ["testimonial", paramsState] });
-      toast.success("Testimonio aprobado");
+      queryClient.invalidateQueries({ queryKey: ['testimonial', paramsState] });
+      toast.success('Testimonio aprobado');
       // Redirigir a dashboard y hacer reload
-      router.push("/dashboard");
+      router.push('/dashboard');
       router.refresh();
     } catch (error) {
-      console.error("Error al aprobar:", error);
-      toast.error("Error al aprobar el testimonio");
+      console.error('Error al aprobar:', error);
+      toast.error('Error al aprobar el testimonio');
     } finally {
       setIsApproving(false);
     }
@@ -96,7 +94,7 @@ export default function Testimonials({ params }: TestimonialProps) {
 
   const handleReject = async () => {
     if (!organizationId || !accessToken || !testimonial?.id) {
-      toast.error("Falta organización o token para rechazar.");
+      toast.error('Falta organización o token para rechazar.');
       return;
     }
     try {
@@ -105,16 +103,16 @@ export default function Testimonials({ params }: TestimonialProps) {
         organizationId,
         testimonial.id,
         accessToken,
-        "rechazado"
+        'rechazado'
       );
-      queryClient.invalidateQueries({ queryKey: ["testimonial", paramsState] });
-      toast.success("Testimonio rechazado");
+      queryClient.invalidateQueries({ queryKey: ['testimonial', paramsState] });
+      toast.success('Testimonio rechazado');
       // Redirigir a dashboard y hacer reload
-      router.push("/dashboard");
+      router.push('/dashboard');
       router.refresh();
     } catch (error) {
-      console.error("Error al rechazar:", error);
-      toast.error("Error al rechazar el testimonio");
+      console.error('Error al rechazar:', error);
+      toast.error('Error al rechazar el testimonio');
     } finally {
       setIsRejecting(false);
     }
@@ -122,7 +120,7 @@ export default function Testimonials({ params }: TestimonialProps) {
 
   const handleSaveChanges = async (newBody: string) => {
     if (!organizationId || !accessToken || !testimonial?.id) {
-      toast.error("Falta organización o token para guardar.");
+      toast.error('Falta organización o token para guardar.');
       return;
     }
     try {
@@ -133,11 +131,11 @@ export default function Testimonials({ params }: TestimonialProps) {
         accessToken,
         { body: newBody }
       );
-      queryClient.invalidateQueries({ queryKey: ["testimonial", paramsState] });
-      toast.success("Cambios guardados");
+      queryClient.invalidateQueries({ queryKey: ['testimonial', paramsState] });
+      toast.success('Cambios guardados');
     } catch (error) {
-      console.error("Error al guardar:", error);
-      toast.error("Error al guardar los cambios");
+      console.error('Error al guardar:', error);
+      toast.error('Error al guardar los cambios');
     } finally {
       setIsSaving(false);
     }

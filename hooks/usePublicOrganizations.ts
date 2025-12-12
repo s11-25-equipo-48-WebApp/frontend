@@ -1,17 +1,18 @@
 // hooks/usePublicOrganizations.ts
 // hooks/usePublicOrganizations.ts
-import { useQuery } from "@tanstack/react-query";
-import { organizationsService } from "@/services/organizations.service";
+import { useQuery } from '@tanstack/react-query';
+import { organizationsService } from '@/services/organizations.service';
 
 export interface Organization {
   id: string;
   name: string;
   description?: string;
+  adminId: string;
 }
 
 export const usePublicOrganizations = () => {
   const { data, isLoading, error } = useQuery({
-    queryKey: ["public-organizations"],
+    queryKey: ['public-organizations'],
     queryFn: () => organizationsService.getPublic(),
   });
 
