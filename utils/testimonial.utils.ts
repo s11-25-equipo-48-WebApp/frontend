@@ -13,6 +13,7 @@ export type SortType =
   | "titulo"
   | "medio"
   | "categoria";
+export type StatusFilter = "" | "pendiente" | "aprobado" | "rechazado";
 
 // TRANSFORMADORES (API → UI)
 
@@ -55,8 +56,9 @@ export const transformAPIToTestimonial = (
     content: apiTestimonial.body || "",
     createdAt: apiTestimonial.created_at,
     formattedDate: formatDate(apiTestimonial.created_at),
-    editor: apiTestimonial.created_by_user?.name || "Sistema",
-    // Campos adicionales para compatibilidad con componentes existentes
+    editor: apiTestimonial.created_by_user
+      ? `${apiTestimonial.created_by_user.name} ${apiTestimonial.created_by_user.last_name}`
+      : "Sistema",
     media_url: apiTestimonial.media_url,
     media_type: apiTestimonial.media_type,
     image: apiTestimonial.media_url || null,
@@ -66,12 +68,15 @@ export const transformAPIToTestimonial = (
     received: apiTestimonial.created_at,
     author: apiTestimonial.author_name || null,
     body: apiTestimonial.body || "",
-    status: apiTestimonial.status, // El servicio normalizará este valor después
+    status: apiTestimonial.status,
   };
 };
 
 // FILTROS
 
+/**
+ * Filtra testimonios por tipo de medio o categoría
+ */
 export const filterTestimonials = (
   testimonials: Testimonial[],
   filterBy: FilterType
@@ -79,13 +84,11 @@ export const filterTestimonials = (
   if (!filterBy) return testimonials;
 
   return testimonials.filter((testimonial) => {
-    // Filtro por categoría (formato: "category:categoryId")
     if (filterBy.startsWith("category:")) {
       const categoryId = filterBy.replace("category:", "");
       return testimonial.categoryId === categoryId;
     }
 
-    // Filtro por tipo de medio
     switch (filterBy) {
       case "video":
         return testimonial.mediaType === "video";
@@ -97,6 +100,17 @@ export const filterTestimonials = (
         return true;
     }
   });
+};
+
+/**
+ * Filtra testimonios por estado
+ */
+export const filterTestimonialsByStatus = (
+  testimonials: Testimonial[],
+  statusFilter: StatusFilter
+): Testimonial[] => {
+  if (!statusFilter) return testimonials;
+  return testimonials.filter((t) => t.status === statusFilter);
 };
 
 // ORDENAMIENTO
@@ -168,4 +182,4 @@ export const sortTestimonials = (
   });
 
   return sorted;
-};
+}

@@ -18,7 +18,7 @@ export default function DashboardStats() {
       title: 'Testimonios recibidos (mes)',
       value: metrics?.receivedMonth ?? 0,
       color: 'bg-blue-500',
-      link: '/dashboard/pending-reviews',
+      link: '/dashboard/testimonials/received',
       showViewAll: true,
     },
     {
