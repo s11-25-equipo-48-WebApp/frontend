@@ -248,7 +248,7 @@ export const testimonialService = {
       },
     });
 
-    const apiTestimonials = response.data.data.data || [];
+    const apiTestimonials = response.data.data || [];
     return apiTestimonials
       .map(transformAPIToTestimonial)
       .map((t) => ({ ...t, status: normalizeStatus(t.status) || 'pendiente' }));
