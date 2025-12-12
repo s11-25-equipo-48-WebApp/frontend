@@ -165,6 +165,7 @@ export const testimonialService = {
         Authorization: `Bearer ${accessToken}`,
       },
     });
+
     const apiTestimonials = response.data.data.data || [];
     return apiTestimonials
       .map(transformAPIToTestimonial)
@@ -247,7 +248,7 @@ export const testimonialService = {
       },
     });
 
-    const apiTestimonials = response.data.data || [];
+    const apiTestimonials = response.data.data.data || [];
     return apiTestimonials
       .map(transformAPIToTestimonial)
       .map((t) => ({ ...t, status: normalizeStatus(t.status) || 'pendiente' }));
